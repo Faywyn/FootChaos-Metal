@@ -5,8 +5,7 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
-
-# set(CMAKE_BUILD_TYPE Debug) # Debug
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 include_directories("src")
 
@@ -17,12 +16,16 @@ find_library(APPLE_FWK_METAL Metal REQUIRED)
 set(SRC_FILES
   src/main.cpp
   src/config.hpp
-  src/utils/utils.hpp
-  src/utils/utils.cpp
-  src/network/network.hpp
-  src/network/network.cpp
-  # src/network/networksManager.hpp
-  # src/network/networksManager.cpp
+  src/network/networksManager.hpp
+  src/network/networksManager.cpp
+  src/footchaos/footchaos.hpp
+  src/footchaos/footchaos.cpp
+  src/footchaos/ball.cpp
+  src/footchaos/car.cpp
+  src/training/training.hpp
+  src/training/training.cpp
+  src/utils.hpp
+  src/utils.cpp
 )
 
 file(GLOB SRC_SHADERS_FILES CONFIGURE_DEPENDS

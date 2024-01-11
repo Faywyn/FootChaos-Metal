@@ -1,29 +1,53 @@
-#include "config.hpp"
-#include "network/network.hpp"
-#include "utils/utils.hpp"
-
-#include <iostream>
-
-#define NS_PRIVATE_IMPLEMENTATION
-#define CA_PRIVATE_IMPLEMENTATION
-#define MTL_PRIVATE_IMPLEMENTATION
-
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
-int main() {
-  srand(time());
+#include <ctime>
+#include <iostream>
 
-  int nbLayer = randomInt(5, 10);
-  int *layerSize = (int *)malloc(sizeof(int) * nbLayer);
+#include "config.hpp"
+#include "network/networksManager.hpp"
+#include "training/training.hpp"
+
+uint64_t time() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
+      .count();
+}
+
+int main(int argc, const char *argv[]) {
+  // srand(static_cast<unsigned int>(time()));
+  srand(0);
+
+  int nbNetwork = 100;
+  int nbLayer = 20;
+  int _nbNeuronPerLayer = INPUT_LENGTH;
+  int *nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
   for (int i = 0; i < nbLayer; i++) {
-    layerSize[i] = randomInt(3, 10);
+    nbNeuronPerLayer[i] = _nbNeuronPerLayer;
+  }
+  nbNeuronPerLayer[0] = INPUT_LENGTH;
+  nbNeuronPerLayer[nbLayer - 1] = OUTPUT_LENGTH;
+
+  float *inputs = (float *)malloc(sizeof(int) * _nbNeuronPerLayer);
+  for (int i = 0; i < _nbNeuronPerLayer; i++) {
+    inputs[i] = rand() * (maxWeight - minWeight) + minWeight;
   }
 
-  Network n = Network();
-  n.createRandom(layerSize, nbLayer);
-  n.display();
+  Training *training = new Training();
+
+  auto creatingTime = time();
+  std::cout << "Creating training ..." << std::endl;
+  training->create(nbNetwork, nbLayer, nbNeuronPerLayer);
+  std::cout << "Training created ! " << time() - creatingTime << "ms"
+            << std::endl;
+
+  auto initTime = time();
+  std::cout << "Start training ..." << std::endl;
+  training->startTraining(0, nbNetwork);
+  std::cout << "Trained ! " << time() - initTime << "ms" << std::endl;
+
+  sleep(10);
 
   return 1;
 }

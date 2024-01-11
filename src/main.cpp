@@ -9,12 +9,6 @@
 #include "network/networksManager.hpp"
 #include "training/training.hpp"
 
-uint64_t time() {
-  using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
-      .count();
-}
-
 int main(int argc, const char *argv[]) {
   // srand(static_cast<unsigned int>(time()));
   srand(0);

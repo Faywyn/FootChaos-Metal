@@ -2,7 +2,6 @@
 *.ir
 
 shaders.metallib
-FootChaos
 .cache
 
 CMakeLists.txt.user

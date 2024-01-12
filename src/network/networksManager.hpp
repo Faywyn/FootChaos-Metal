@@ -4,20 +4,21 @@
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
+#include <filesystem>
 
 #include "../config.hpp"
 #include "../footchaos/footchaos.hpp"
+
+namespace fs = std::filesystem;
 
 class NetworksManager {
 private:
   // Weights[i] is a list of all weights from layer i
   // in every network
-
-  int nbNetwork;
-  int nbLayer;
-  int nbWeightPerNetwork;
-  int *nbNeuronPerLayer;
   MTL::Buffer **weights;
+  MTL::Buffer *network1;
+  MTL::Buffer *network2;
+  int **groups;
 
   // Games data
   FootChaos **games;
@@ -33,22 +34,12 @@ private:
   MTL::Buffer *bufferResult;
   MTL::Buffer *bufferSizeLayer;
   MTL::Buffer *bufferSizePreviousLayer;
+  MTL::Buffer *bufferNbGroup;
 
   bool created = false;
 
-public:
-  NetworksManager();
-  NetworksManager(int nbNetwork, int nbLayer, int *nbNeuronPerLayer);
-  ~NetworksManager();
-
-  void createNetworks();
-  // void loadNetworks();
-
   void initGeneration();
   void performTickGeneration();
-  void performGeneration();
-
-  float *getScore();
 
   float *computeWeight(MTL::Buffer *inputs);
   void computeActivation(MTL::ComputeCommandEncoder *computeEncoderA,
@@ -56,5 +47,24 @@ public:
   void initWeightsBuffers(MTL::ComputeCommandEncoder *computeEncoder,
                           int layerIndex, MTL::Buffer *inputs);
   void freeBuffers();
+
+public:
+  int nbNetwork;
+  int nbLayer;
+  int nbWeightPerNetwork;
+  int *nbNeuronPerLayer;
+  int groupSize;
+
+  NetworksManager(fs::path path);
+  NetworksManager(int nbNetwork, int groupSize, int nbLayer,
+                  int *nbNeuronPerLayer);
+  void initSystem();
+  ~NetworksManager();
+
+  void saveNetworks(fs::path path);
+
+  void performGeneration(int **groups);
+
+  float *getScore();
 };
 #endif /* networksManager_hpp */

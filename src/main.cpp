@@ -2,19 +2,18 @@
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
-#include <ctime>
 #include <iostream>
 
 #include "config.hpp"
-#include "network/networksManager.hpp"
 #include "training/training.hpp"
+#include "utils.hpp"
 
 int main(int argc, const char *argv[]) {
-  // srand(static_cast<unsigned int>(time()));
-  srand(0);
+  srand(static_cast<unsigned int>(time()));
 
   int nbNetwork = 100;
   int nbLayer = 20;
+  int groupSize = 20;
   int _nbNeuronPerLayer = INPUT_LENGTH;
   int *nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
   for (int i = 0; i < nbLayer; i++) {
@@ -28,20 +27,17 @@ int main(int argc, const char *argv[]) {
     inputs[i] = rand() * (maxWeight - minWeight) + minWeight;
   }
 
-  Training *training = new Training();
-
   auto creatingTime = time();
   std::cout << "Creating training ..." << std::endl;
-  training->create(nbNetwork, nbLayer, nbNeuronPerLayer);
+  Training *training =
+      new Training(nbNetwork, groupSize, nbLayer, nbNeuronPerLayer);
   std::cout << "Training created ! " << time() - creatingTime << "ms"
             << std::endl;
 
   auto initTime = time();
   std::cout << "Start training ..." << std::endl;
-  training->startTraining(0, nbNetwork);
+  training->startTraining(0, 1);
   std::cout << "Trained ! " << time() - initTime << "ms" << std::endl;
-
-  sleep(10);
 
   return 1;
 }

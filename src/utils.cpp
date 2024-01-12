@@ -1,5 +1,4 @@
 #include "utils.hpp"
-#include <random>
 
 // Between -1 and 1
 float randomFloat() {
@@ -18,4 +17,10 @@ int randomInt(int min, int max) {
 
   int r = distr(generator);
   return r;
+}
+
+uint64_t time() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
+      .count();
 }

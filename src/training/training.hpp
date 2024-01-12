@@ -11,20 +11,23 @@ private:
   int nbWeightPerNetwork;
   int *nbNeuronPerLayer;
 
+  int groupSize;
+  int **groups;
+  int *nbNetworkPerGroup;
+
+  NetworksManager *networksManager;
+
   float *result;
 
-  bool created = false;
-
 public:
-  Training();
+  Training(int nbNetwork, int groupSize, int nbLayer, int *nbNeuronPerLayer);
+  Training(fs::path path);
   ~Training();
 
-  void load(fs::path path);
   void save(fs::path path);
-  void create(int nbNetwork, int nbLayer, int *nbNeuronPerLayer);
 
-  void threadTraining(int *networks, int sizeOfGroups);
-  int **createGroups(int sizeOfGroups);
-  void performTrain(int sizeOfGroups);
-  void startTraining(int saveEveryX, int sizeOfGroups);
+  void startTraining(int saveEveryX, int nbGeneration);
+  void threadTraining();
+  void createGroups();
+  void performTrain();
 };

@@ -2,67 +2,69 @@
 #include "../utils.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <thread>
 #include <vector>
 
-Training::Training() {}
+Training::Training(int nbNetwork, int groupSize, int nbLayer,
+                   int *nbNeuronPerLayer) {
 
-void Training::create(int nbNetwork, int nbLayer, int *nbNeuronPerLayer) {
+  if (nbNetwork % groupSize != 0)
+    throw std::invalid_argument("nbNetwork % groupSize != 0");
+
   this->nbNetwork = nbNetwork;
-  // networkModel = new Network(nbLayer, nbNeuronPerLayer);
-  // networks = (Network **)malloc(sizeof(Network *) * nbNetwork);
-  //
-  // for (int i = 0; i < nbNetwork; i++) {
-  //   networks[i] = new Network(nbLayer, nbNeuronPerLayer);
-  //   networks[i]->randomize();
-  // }
-  // this->created = true;
+  this->nbLayer = nbLayer;
+  this->groupSize = groupSize;
+  this->nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
+  memcpy(this->nbNeuronPerLayer, nbNeuronPerLayer, sizeof(int) * nbLayer);
+
+  networksManager =
+      new NetworksManager(nbNetwork, groupSize, nbLayer, nbNeuronPerLayer);
+}
+
+Training::Training(fs::path path) {
+  networksManager = new NetworksManager(path);
+  this->nbNetwork = networksManager->nbNetwork;
+  this->nbLayer = networksManager->nbLayer;
+  this->groupSize = networksManager->groupSize;
+  this->nbWeightPerNetwork = networksManager->nbWeightPerNetwork;
+  this->nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
+  memcpy(this->nbNeuronPerLayer, networksManager->nbNeuronPerLayer, nbLayer);
 }
 
 Training::~Training() {
-  if (created == false)
-    return;
-  // TODO
+  free(nbNeuronPerLayer);
+  delete networksManager;
+
+  return;
+  for (int i = 0; i < nbNetwork / groupSize; i++) {
+    free(groups[i]);
+  }
+  free(groups);
+  free(nbNetworkPerGroup);
 }
 
-void Training::load(fs::path path) { return; }
-void Training::save(fs::path path) { return; }
+void Training::save(fs::path path) { networksManager->saveNetworks(path); }
 
-void Training::threadTraining(int *networkIntGroup, int nbNetworkGroup) {
-  // Network **networkGroup =
-  //     (Network **)malloc(sizeof(Network *) * nbNetworkGroup);
-  // for (int i = 0; i < nbNetwork; i++) {
-  //   networkGroup[i] = this->networks[networkIntGroup[i]];
-  // }
-  //
-  // std::cout << "#2.x.3" << std::endl;
-  //
-  // NetworksManager nManager =
-  //     NetworksManager(networkGroup, nbNetworkGroup, networkModel);
-  //
-  // nManager.performGeneration();
-  //
-  // std::cout << "#2.x.4" << std::endl;
-  //
-  // float *rManager = nManager.getScore();
-  //
-  // std::cout << "nbGroup: " << nbNetworkGroup << std::endl;
-  //
-  // for (int i = 0; i < nbNetworkGroup; i++) {
-  //   this->result[networkIntGroup[i]] = rManager[i];
-  // }
-  // std::cout << "hfuidzadhza" << std::endl;
-}
-
-int **Training::createGroups(int sizeOfGroups) {
-  int nbGroup = nbNetwork / sizeOfGroups;
-
-  int **groups = (int **)malloc(sizeof(int *) * nbGroup);
-  int *nbNetworkPerGroup = (int *)malloc(sizeof(int) * nbGroup);
+void Training::threadTraining() {
+  int nbGroup = nbNetwork / groupSize;
+  std::vector<std::thread> threads;
+  threads.reserve(nbGroup);
 
   for (int i = 0; i < nbGroup; i++) {
-    groups[i] = (int *)malloc(sizeof(int) * sizeOfGroups);
+    threads.emplace_back(
+        [this]() { networksManager->performGeneration(groups); });
+  }
+
+  for (std::thread &t : threads) {
+    t.join();
+  }
+}
+
+void Training::createGroups() {
+  int nbGroup = nbNetwork / groupSize;
+  for (int i = 0; i < nbGroup; i++) {
     nbNetworkPerGroup[i] = 0;
   }
 
@@ -70,30 +72,37 @@ int **Training::createGroups(int sizeOfGroups) {
     int r;
     do {
       r = randomInt(0, nbGroup - 1);
-    } while (nbNetworkPerGroup[r] == sizeOfGroups);
+    } while (nbNetworkPerGroup[r] == groupSize);
 
     groups[r][nbNetworkPerGroup[r]] = i;
     nbNetworkPerGroup[r] += 1;
   }
-
-  return groups;
 }
 
-void Training::performTrain(int sizeOfGroups) {
-
-  NetworksManager n = NetworksManager(nbNetwork, nbLayer, nbNeuronPerLayer);
-  n.createNetworks();
-  n.initGeneration();
-  n.performGeneration();
+void Training::performTrain() {
+  this->createGroups();
+  networksManager->performGeneration(groups);
 }
 
-void Training::startTraining(int saveEveryXn, int sizeOfGroups) {
-  result = (float *)malloc(sizeof(float) * nbNetwork);
-  while (true) {
-    std::cout << "Performing a train..." << std::endl;
-    performTrain(sizeOfGroups);
-    std::cout << "Train done" << std::endl;
-    return;
+void Training::startTraining(int saveEveryXn, int nbGeneration) {
+  int nbGen_ = 0;
+
+  int nbGroup = nbNetwork / groupSize;
+  groups = (int **)malloc(sizeof(int *) * nbGroup);
+  nbNetworkPerGroup = (int *)malloc(sizeof(int) * nbGroup);
+  for (int i = 0; i < nbGroup; i++) {
+    groups[i] = (int *)malloc(sizeof(int) * groupSize);
   }
-  free(result);
+
+  std::cout << "===== ===== ===== =====\n"
+            << "Starting training\n"
+            << "===== ===== ===== =====" << std::endl;
+
+  while (nbGen_ < nbGeneration || nbGeneration == -1) {
+    performTrain();
+  }
+
+  std::cout << "===== ===== ===== =====\n"
+            << "Training End\n"
+            << "===== ===== ===== =====" << std::endl;
 }

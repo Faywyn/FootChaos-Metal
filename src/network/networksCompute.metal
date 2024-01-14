@@ -4,27 +4,28 @@ using namespace metal;
 // networksWeights: List of all the weights of every networks
 // inputs: Result list from all the previous layer
 
-kernel void networksComputeWeight(device float *inputs, device float *result,
+kernel void networksComputeWeight(device float *inputs,
+                                  device float *result,
                                   device float *networksWeights,
-                                  device int *network1, device int *network2,
-                                  device int *_sizeLayer,
-                                  device int *_sizePreviousLayer,
-                                  device int *_nbGame,
+                                  device int *network1,
+                                  device int *network2,
+                                  device int *data,
                                   uint index [[thread_position_in_grid]]) {
 
   // Get the values
-  int sizeLayer = *_sizeLayer;
-  int sizePreviousLayer = *_sizePreviousLayer;
-  int nbGame = *_nbGame;
+  int sizeLayer = data[0];
+  int sizePreviousLayer = data[1];
+  int nbGamePerGroup = data[2];
+  int groupId = data[3];
   int nbWeightLayer = sizeLayer * sizePreviousLayer;
 
   // Determine index of Network, Neuron, Weight, ...
-  int gameId2 = index / (nbWeightLayer * nbGame);
-  int gameId = gameId2 / 2;
-  int networkId = (gameId2 % 2 == 0) ? network1[gameId] : network2[gameId];
+  int gameId = index / (2 * nbWeightLayer);
+  int networkIdAbs = (index - gameId * nbWeightLayer * 2) / nbWeightLayer;
+  int networkId = (networkIdAbs % 2 == 0) ? network1[groupId * nbGamePerGroup + gameId] : network2[groupId * nbGamePerGroup + gameId];
 
-  int indexInput = gameId2 * sizePreviousLayer + (index % sizePreviousLayer);
-  int indexOutput = gameId2 * sizeLayer + index / sizeLayer;
+  int indexInput = gameId * sizePreviousLayer + (index % sizeLayer);
+  int indexOutput = gameId * sizeLayer + index / sizeLayer;
   int indexWeight = networkId * nbWeightLayer + index % nbWeightLayer;
 
   result[indexOutput] += inputs[indexInput] * networksWeights[indexWeight];

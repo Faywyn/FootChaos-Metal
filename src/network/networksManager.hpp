@@ -18,11 +18,12 @@ private:
   MTL::Buffer **weights;
   MTL::Buffer *network1;
   MTL::Buffer *network2;
-  int **groups;
+  MTL::Buffer **groups;
 
   // Games data
   FootChaos **games;
   int nbGame;
+  int nbGamePerGroup;
   int *networksInGame;
 
   // Metal
@@ -30,18 +31,13 @@ private:
   MTL::ComputePipelineState *weightFunctionPSO;
   MTL::Device *device;
 
-  // Buffer for metal functions
-  MTL::Buffer *bufferResult;
-  MTL::Buffer *bufferSizeLayer;
-  MTL::Buffer *bufferSizePreviousLayer;
-  MTL::Buffer *bufferNbGroup;
-
   bool created = false;
 
   void initGeneration();
-  void performTickGeneration();
+  void performTickGeneration(int groupId);
+  void performGenerationGroup(int groupId);
 
-  float *computeWeight(MTL::Buffer *inputs);
+  float *computeWeight(MTL::Buffer *inputs, int groupId);
   void computeActivation(MTL::ComputeCommandEncoder *computeEncoderA,
                          MTL::CommandBuffer *commandBufferA, int length);
   void initWeightsBuffers(MTL::ComputeCommandEncoder *computeEncoder,

@@ -98,9 +98,9 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
             << "Starting training\n"
             << "===== ===== ===== =====" << std::endl;
 
-  while (nbGen_ < nbGeneration || nbGeneration == -1) {
-    performTrain();
-  }
+  // while (nbGen_ < nbGeneration || nbGeneration == -1) {
+  performTrain();
+  // }
 
   std::cout << "===== ===== ===== =====\n"
             << "Training End\n"

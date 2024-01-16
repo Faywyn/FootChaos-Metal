@@ -214,12 +214,7 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
       throw "Impossible to create result buffer (" + std::to_string(iLayer) +
           ")";
 
-    float *resContent = (float *)resBuffer->contents();
-    for (int i = 0; i < sizeLayer * nbGame * 2; i++) {
-      resContent[i] = 0;
-    }
-
-    int nbExecW = nbGame * sizeLayer * sizePreviousLayer * 2;
+    int nbExecW = nbGame * sizeLayer * 2;
     MTL::Size gridSizeW = MTL::Size::Make(nbExecW, 1, 1);
 
     NS::UInteger threadGroupSizeW =
@@ -227,7 +222,7 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
     if (threadGroupSizeW > nbExecW) {
       threadGroupSizeW = nbExecW;
     }
-    MTL::Size threadgroupSize = MTL::Size::Make(threadGroupSizeW, 1, 1);
+    MTL::Size threadgroupSizeW = MTL::Size::Make(threadGroupSizeW, 1, 1);
 
     MTL::ComputeCommandEncoder *computeEncoderW =
         commandBuffer->computeCommandEncoder();
@@ -236,7 +231,6 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
           ")";
 
     computeEncoderW->setComputePipelineState(weightFunctionPSO);
-    computeEncoderW->setComputePipelineState(activationFunctionPSO);
 
     computeEncoderW->setBuffer(inputs, 0, 0);
     computeEncoderW->setBuffer(bufferResult, 0, 1);
@@ -245,7 +239,7 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
     computeEncoderW->setBuffer(network2, 0, 4);
     computeEncoderW->setBuffer(dataBuffer, 0, 5);
 
-    computeEncoderW->dispatchThreads(gridSizeW, threadgroupSize);
+    computeEncoderW->dispatchThreads(gridSizeW, threadgroupSizeW);
     computeEncoderW->endEncoding();
 
     MTL::ComputeCommandEncoder *computeEncoderA =
@@ -264,9 +258,10 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
     }
     MTL::Size threadgroupSizeA = MTL::Size::Make(threadGroupSizeA, 1, 1);
 
+    computeEncoderA->setComputePipelineState(activationFunctionPSO);
     computeEncoderA->setBuffer(bufferResult, 0, 0);
 
-    computeEncoderA->dispatchThreads(gridSizeA, threadgroupSize);
+    computeEncoderA->dispatchThreads(gridSizeA, threadgroupSizeA);
     computeEncoderA->endEncoding();
 
     buffers[iLayer - 1] = inputs;
@@ -275,14 +270,9 @@ MTL::Buffer *NetworksManager::computeWeight(MTL::Buffer *inputs) {
 
     inputs = resBuffer;
   }
-  std::cout << "Created in: " << time() - t << std::endl;
 
-  t = time();
   commandBuffer->commit();
-  std::cout << "Commit in: " << time() - t << std::endl;
-  t = time();
   commandBuffer->waitUntilCompleted();
-  std::cout << "Exec in: " << time() - t << std::endl;
   commandBuffer->release();
 
   for (int i = 0; i < nbLayer - 1; i++) {
@@ -439,7 +429,7 @@ void NetworksManager::performGeneration(int **groups) {
             << std::endl;
 
   for (int i = 0; i < GAME_LENGTH * TICKS_SECOND; i++) {
-    std::cout << i << std::endl;
+    // std::cout << i << std::endl;
     if (i % ((GAME_LENGTH * TICKS_SECOND + 1) / 100) == 0)
       std::cout << i << "/" << GAME_LENGTH * TICKS_SECOND << std::endl;
     performTickGeneration();

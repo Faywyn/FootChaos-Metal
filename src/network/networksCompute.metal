@@ -18,15 +18,18 @@ kernel void networksComputeWeight(device float *inputs,
   int nbWeightLayer = sizeLayer * sizePreviousLayer;
 
   // Determine index of Network, Neuron, Weight, ...
-  int gameId = index / (2 * nbWeightLayer);
-  int networkIdAbs = (index - gameId * nbWeightLayer * 2) / nbWeightLayer;
+  int gameId = index / (2 * sizeLayer);
+  int networkIdAbs = (index - gameId * sizeLayer * 2) / sizeLayer;
   int networkId = (networkIdAbs % 2 == 0) ? network1[gameId] : network2[gameId];
+  int depth = index % sizeLayer;
 
-  int indexInput = gameId * sizePreviousLayer + (index % sizeLayer);
-  int indexOutput = gameId * sizeLayer + index / sizeLayer;
-  int indexWeight = networkId * nbWeightLayer + index % nbWeightLayer;
+  int weightIndexStart = networkId * nbWeightLayer + depth * sizePreviousLayer;
+  int inputIndexStart = (2 * gameId + networkIdAbs) * sizePreviousLayer;
 
-  result[indexOutput] += inputs[indexInput] * networksWeights[indexWeight];
+  result[index] = 0;
+  for (int i = 0; i < sizePreviousLayer; i++) {
+    result[index] += networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
+  }
 }
 
 float activation(float x) { return 1 / (1 + exp(-x)); }

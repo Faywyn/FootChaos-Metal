@@ -1,6 +1,7 @@
 #include "footchaos.hpp"
 #include "../config.hpp"
 
+#include <box2d/box2d.h>
 #include <iostream>
 
 // CONST FOR NORMALIZE

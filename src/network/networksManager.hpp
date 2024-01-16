@@ -41,7 +41,7 @@ private:
   void initGeneration();
   void performTickGeneration();
 
-  float *computeWeight(MTL::Buffer *inputs);
+  MTL::Buffer *computeWeight(MTL::Buffer *inputs);
   void computeActivation(MTL::ComputeCommandEncoder *computeEncoderA,
                          MTL::CommandBuffer *commandBufferA, int length);
   void initWeightsBuffers(MTL::ComputeCommandEncoder *computeEncoder,

@@ -11,9 +11,9 @@
 int main(int argc, const char *argv[]) {
   srand(static_cast<unsigned int>(time()));
 
-  int nbNetwork = 100;
+  int nbNetwork = 1000;
   int nbLayer = 20;
-  int groupSize = 20;
+  int groupSize = 10;
   int _nbNeuronPerLayer = INPUT_LENGTH;
   int *nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
   for (int i = 0; i < nbLayer; i++) {

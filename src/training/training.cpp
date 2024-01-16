@@ -100,6 +100,7 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
 
   while (nbGen_ < nbGeneration || nbGeneration == -1) {
     performTrain();
+    nbGen_++;
   }
 
   std::cout << "===== ===== ===== =====\n"

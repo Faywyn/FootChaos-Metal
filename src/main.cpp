@@ -11,7 +11,7 @@
 int main(int argc, const char *argv[]) {
   srand(static_cast<unsigned int>(time()));
 
-  int nbNetwork = 500;
+  int nbNetwork = 50;
   int nbLayer = 20;
   int groupSize = 10;
   int _nbNeuronPerLayer = INPUT_LENGTH;
@@ -36,7 +36,7 @@ int main(int argc, const char *argv[]) {
 
   auto initTime = time();
   std::cout << "Start training ..." << std::endl;
-  training->startTraining(0, 1);
+  training->startTraining(0, 10);
   std::cout << "Trained ! " << time() - initTime << "ms" << std::endl;
 
   return 1;

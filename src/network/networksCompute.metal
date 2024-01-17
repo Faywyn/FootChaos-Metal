@@ -1,8 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// networksWeights: List of all the weights of every networks
-// inputs: Result list from all the previous layer
+float activation(float x) { return 1 / (1 + exp(-x)); }
 
 kernel void networksComputeWeight(device float *inputs,
                                   device float *result,
@@ -30,11 +29,12 @@ kernel void networksComputeWeight(device float *inputs,
   for (int i = 0; i < sizePreviousLayer; i++) {
     result[index] += networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
   }
+  result[index] = activation(result[index]);
 }
 
-float activation(float x) { return 1 / (1 + exp(-x)); }
 
 kernel void networksComputeActivation(device float *inputs,
                                       uint index [[thread_position_in_grid]]) {
+                                      return;
   inputs[index] = activation(inputs[index]);
 }

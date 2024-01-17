@@ -28,4 +28,8 @@
 #define TICKS_SECOND 60
 #define GAME_LENGTH (30 * TICK_DURATION_COEF) // s
 
+#define NB_THREAD 8
+#define NB_STAT 10
+#define STAT_TAB_START 4
+
 #endif /* config_h */

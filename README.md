@@ -10,4 +10,9 @@ d'Apple (M1, M2, ...) en utilisant **metal**
 
 ()
 
-## . 
+## Avant - Après
+
+| - | Avant | Après | Après (MutliThread) 
+| -------- | ------- | -------  | ------- | 
+| NbMatch/Seconde | 41 | 28 | x |
+

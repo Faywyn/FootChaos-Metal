@@ -41,9 +41,7 @@ private:
   void initGeneration();
   void performTickGeneration();
 
-  MTL::Buffer *computeWeight(MTL::Buffer *inputs);
-  void computeActivation(MTL::ComputeCommandEncoder *computeEncoderA,
-                         MTL::CommandBuffer *commandBufferA, int length);
+  MTL::Buffer *computeNetworks(MTL::Buffer *inputs);
   void initWeightsBuffers(MTL::ComputeCommandEncoder *computeEncoder,
                           int layerIndex, MTL::Buffer *inputs);
   void freeBuffers();

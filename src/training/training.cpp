@@ -1,5 +1,6 @@
 #include "training.hpp"
 #include "../utils.hpp"
+#include "config.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -94,16 +95,37 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
     groups[i] = (int *)malloc(sizeof(int) * groupSize);
   }
 
-  std::cout << "===== ===== ===== =====\n"
-            << "Starting training\n"
-            << "===== ===== ===== =====" << std::endl;
+  system("clear");
+
+  int nbStat = NB_STAT;
+  uint64_t globalTimeStart = time();
+  uint64_t minTime = globalTimeStart;
+  uint64_t maxTime = 0;
+  std::string line = std::string(100, '-');
+
+  std::cout << "\033[" << STAT_TAB_START + 0 << ";0H" << line;
+  std::cout << "\033[" << STAT_TAB_START + 2 << ";0H" << line;
+  std::cout << "\033[" << STAT_TAB_START + 5 + nbStat << ":0H" << line;
+  std::cout << "\033[" << STAT_TAB_START + 7 + nbStat << ":0H" << line;
+  std::cout << std::endl;
 
   while (nbGen_ < nbGeneration || nbGeneration == -1) {
+    uint64_t timeStart = time();
     performTrain();
+    uint64_t duration = time() - timeStart;
+    minTime = minTime > duration ? duration : minTime;
+    maxTime = maxTime < duration ? duration : maxTime;
+    printOldStat(STAT_TAB_START + 4 + nbGen_ % nbStat, nbGen_,
+                 time() - timeStart);
+
+    std::cout << "\033[" << STAT_TAB_START + 6 + nbStat << ":0H"
+              << "  "
+              << "Global Duration: "
+              << round((float)(time() - globalTimeStart) / 1000, 100) << "s "
+              << "Min: " << round((float)minTime / 1000, 100) << "s "
+              << "Max: " << round((float)maxTime / 1000, 100) << "s "
+              << std::endl;
+
     nbGen_++;
   }
-
-  std::cout << "===== ===== ===== =====\n"
-            << "Training End\n"
-            << "===== ===== ===== =====" << std::endl;
 }

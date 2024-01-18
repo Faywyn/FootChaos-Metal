@@ -18,7 +18,7 @@ private:
   MTL::Buffer **weights;
   MTL::Buffer *network1;
   MTL::Buffer *network2;
-  int **groups;
+  MTL::Buffer **groups;
 
   // Games data
   FootChaos **games;

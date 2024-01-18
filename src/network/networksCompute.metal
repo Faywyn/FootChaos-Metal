@@ -1,8 +1,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-float activation(float x) { return 1 / (1 + exp(-x)); }
-
 kernel void networksComputeWeight(device float *inputs,
                                   device float *result,
                                   device float *networksWeights,
@@ -29,12 +27,7 @@ kernel void networksComputeWeight(device float *inputs,
   for (int i = 0; i < sizePreviousLayer; i++) {
     result[index] += networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
   }
-  result[index] = activation(result[index]);
-}
 
-
-kernel void networksComputeActivation(device float *inputs,
-                                      uint index [[thread_position_in_grid]]) {
-                                      return;
-  inputs[index] = activation(inputs[index]);
+  // Pass activation function
+  result[index] = 1 / ( 1 + exp(-result[index]));
 }

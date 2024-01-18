@@ -22,47 +22,37 @@ private:
 
   // Games data
   FootChaos **games;
-  int nbGame;
-  int *networksInGame;
 
   // Metal
-  MTL::ComputePipelineState *activationFunctionPSO;
   MTL::ComputePipelineState *weightFunctionPSO;
   MTL::Device *device;
 
-  // Buffer for metal functions
-  MTL::Buffer *bufferResult;
-  MTL::Buffer *bufferSizeLayer;
-  MTL::Buffer *bufferSizePreviousLayer;
-  MTL::Buffer *bufferNbGroup;
-
-  bool created = false;
-
   void initGeneration();
+  void initSystem();
+  void initBuffer();
   void performTickGeneration();
 
   MTL::Buffer *computeNetworks(MTL::Buffer *inputs);
-  void initWeightsBuffers(MTL::ComputeCommandEncoder *computeEncoder,
-                          int layerIndex, MTL::Buffer *inputs);
-  void freeBuffers();
 
 public:
   int nbNetwork;
   int nbLayer;
-  int nbWeightPerNetwork;
   int *nbNeuronPerLayer;
   int groupSize;
+  int nbGeneration;
+  int nbGame;
 
   NetworksManager(fs::path path);
   NetworksManager(int nbNetwork, int groupSize, int nbLayer,
                   int *nbNeuronPerLayer);
-  void initSystem();
   ~NetworksManager();
 
-  void saveNetworks(fs::path path);
-
   void performGeneration(int **groups);
+  float **getScore();
 
-  float *getScore();
+  void saveNetworks(fs::path path);
+  void randomizeNetwork(int networkId);
+  void copyNetwork(int from, int to);
+  void mutateNetwork(int id, float p);
 };
 #endif /* networksManager_hpp */

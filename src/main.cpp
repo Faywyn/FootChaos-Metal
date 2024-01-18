@@ -11,7 +11,7 @@
 int main(int argc, const char *argv[]) {
   srand(static_cast<unsigned int>(time()));
 
-  int nbNetwork = 50;
+  int nbNetwork = 1000;
   int nbLayer = 20;
   int groupSize = 10;
   int _nbNeuronPerLayer = INPUT_LENGTH;
@@ -28,16 +28,14 @@ int main(int argc, const char *argv[]) {
   }
 
   auto creatingTime = time();
-  std::cout << "Creating training ..." << std::endl;
   Training *training =
-      new Training(nbNetwork, groupSize, nbLayer, nbNeuronPerLayer);
-  std::cout << "Training created ! " << time() - creatingTime << "ms"
-            << std::endl;
+      new Training(nbNetwork, groupSize, nbLayer, nbNeuronPerLayer,
+                   fs::current_path() / "entrainements/1.txt");
+  // Training *training = new Training(fs::current_path() /
+  // "entrainements/1.txt");
 
   auto initTime = time();
-  std::cout << "Start training ..." << std::endl;
   training->startTraining(0, 10);
-  std::cout << "Trained ! " << time() - initTime << "ms" << std::endl;
 
   return 1;
 }

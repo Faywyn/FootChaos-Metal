@@ -1,9 +1,6 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// networksWeights: List of all the weights of every networks
-// inputs: Result list from all the previous layer
-
 kernel void networksComputeWeight(device float *inputs,
                                   device float *result,
                                   device float *networksWeights,
@@ -13,27 +10,24 @@ kernel void networksComputeWeight(device float *inputs,
                                   uint index [[thread_position_in_grid]]) {
 
   // Get the values
-  int sizeLayer = data[0];
+  int sizeLayer = data[0]; 
   int sizePreviousLayer = data[1];
-  int nbGamePerGroup = data[2];
-  int groupId = data[3];
   int nbWeightLayer = sizeLayer * sizePreviousLayer;
 
   // Determine index of Network, Neuron, Weight, ...
-  int gameId = index / (2 * nbWeightLayer);
-  int networkIdAbs = (index - gameId * nbWeightLayer * 2) / nbWeightLayer;
-  int networkId = (networkIdAbs % 2 == 0) ? network1[groupId * nbGamePerGroup + gameId] : network2[groupId * nbGamePerGroup + gameId];
+  int gameId = index / (2 * sizeLayer);
+  int networkIdAbs = (index - gameId * sizeLayer * 2) / sizeLayer;
+  int networkId = (networkIdAbs % 2 == 0) ? network1[gameId] : network2[gameId];
+  int depth = index % sizeLayer;
 
-  int indexInput = gameId * sizePreviousLayer + (index % sizeLayer);
-  int indexOutput = gameId * sizeLayer + index / sizeLayer;
-  int indexWeight = networkId * nbWeightLayer + index % nbWeightLayer;
+  int weightIndexStart = networkId * nbWeightLayer + depth * sizePreviousLayer;
+  int inputIndexStart = (2 * gameId + networkIdAbs) * sizePreviousLayer;
 
-  result[indexOutput] += inputs[indexInput] * networksWeights[indexWeight];
-}
+  result[index] = 0;
+  for (int i = 0; i < sizePreviousLayer; i++) {
+    result[index] += networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
+  }
 
-float activation(float x) { return 1 / (1 + exp(-x)); }
-
-kernel void networksComputeActivation(device float *inputs,
-                                      uint index [[thread_position_in_grid]]) {
-  inputs[index] = activation(inputs[index]);
+  // Pass activation function
+  result[index] = 1 / ( 1 + exp(-result[index]));
 }

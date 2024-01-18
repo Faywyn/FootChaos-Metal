@@ -6,28 +6,28 @@ namespace fs = std::filesystem;
 
 class Training {
 private:
-  int nbNetwork;
-  int nbLayer;
-  int nbWeightPerNetwork;
-  int *nbNeuronPerLayer;
-
-  int groupSize;
-  int **groups;
-  int *nbNetworkPerGroup;
+  fs::path path;
 
   NetworksManager *networksManager;
 
-  float *result;
+  int **groups;
+  int *nbNetworkPerGroup;
 
 public:
-  Training(int nbNetwork, int groupSize, int nbLayer, int *nbNeuronPerLayer);
+  Training(int nbNetwork, int groupSize, int nbLayer, int *nbNeuronPerLayer,
+           fs::path path);
   Training(fs::path path);
   ~Training();
 
-  void save(fs::path path);
+  // Create groups
+  void init();
+
+  void save();
 
   void startTraining(int saveEveryX, int nbGeneration);
-  void threadTraining();
+  float **getScore();
+  void mutate(float **score);
+
   void createGroups();
   void performTrain();
 };

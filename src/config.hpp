@@ -1,9 +1,7 @@
 #ifndef config_h
 #define config_h
 
-#define minWeight (-10)
-#define maxWeight (+10)
-
+// ----- GAME CONFIG -----
 #define FIELD_LENGHT 512.0f
 #define FIELD_WIDTH 409.6f
 #define GOAL_WIDTH 89.3f
@@ -21,11 +19,26 @@
 #define MAX_STEERING_SPEED 0.1f
 #define TORQUE_FORCE (CAR_LENGHT * CAR_WIDTH * 1e2)
 
-#define INPUT_LENGTH 15
-#define OUTPUT_LENGTH 2
-
 #define TICK_DURATION_COEF 2
 #define TICKS_SECOND 60
 #define GAME_LENGTH (30 * TICK_DURATION_COEF) // s
+// ----- GAME CONFIG -----
+
+// ----- NETWORKS CONFIG -----
+#define minWeight (-10)
+#define maxWeight (+10)
+
+#define INPUT_LENGTH 15
+#define OUTPUT_LENGTH 2
+
+#define NEW_BLOOD_COEF 0.008f
+#define COPY_COEF 0.004f
+// ----- NETWORKS CONFIG -----
+
+// ----- OTHER -----
+#define NB_THREAD 8
+#define STAT_TAB_START 4
+#define NB_STATS 10
+// ----- OTHER -----
 
 #endif /* config_h */

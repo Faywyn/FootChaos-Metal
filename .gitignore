@@ -1,6 +1,8 @@
 .DS_STORE
 *.ir
 
+entrainements
+
 shaders.metallib
 .cache
 

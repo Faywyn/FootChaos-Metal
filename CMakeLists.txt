@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast")
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Debug)
 
 include_directories("src")
 
@@ -49,8 +49,8 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-include_directories(/Users/albandelarochefoucauld/.vcpkg-clion/vcpkg/installed/arm64-osx/include)
-link_directories(/Users/albandelarochefoucauld/.vcpkg-clion/vcpkg/installed/arm64-osx/lib)
+include_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/include)
+link_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/lib)
 
 add_executable(FootChaos ${SRC_FILES} shaders.metallib)
 

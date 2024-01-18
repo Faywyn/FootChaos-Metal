@@ -1,15 +1,13 @@
-# Nom du Projet
+# FootChaos-Metal
 
 
 **FootChaos** est un jeu en 2D reprenant les principes de RocketLeague intégrant une
-intelligence artificielle avancée, développé spécifiquement pour les puces
-d'Apple (M1, M2, ...) en utilisant **metal**
+intelligence artificielle. Cette IA a été développé spécifiquement pour les puces
+d'Apple (M1, M2, ...) en utilisant **metal.cpp**
 
-## Captures d'écran
-
-()
 
 ## Avant - Après
+Tableau avec différents résultats (différents paramètres) pour comparer le gain de performance de l'utilisation du GPU.
 
 | Nombre de réseau | Nombre de couche | Taille des groupes | Taille des couche | Temps CPU | Temps GPU | Gain |
 |------------------|------------------|--------------------|-------------------|-----------|-----------| ---- |

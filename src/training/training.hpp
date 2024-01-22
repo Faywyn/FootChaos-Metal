@@ -12,6 +12,7 @@ private:
 
   int **groups;
   int *nbNetworkPerGroup;
+  void getScoreData(float **score, float *avrg, float *best, float *avrgPoints);
 
 public:
   Training(int nbNetwork, int groupSize, int nbLayer, int *nbNeuronPerLayer,
@@ -26,6 +27,7 @@ public:
 
   void startTraining(int saveEveryX, int nbGeneration);
   float **getScore();
+  void saveGame(int player1, int player2);
   void mutate(float **score);
 
   void createGroups();

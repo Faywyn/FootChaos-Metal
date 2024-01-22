@@ -2,7 +2,10 @@
 #define footchaos_hpp
 
 #include <box2d/box2d.h>
+#include <filesystem>
 #include <stdio.h>
+
+namespace fs = std::filesystem;
 
 // -----
 // CAR
@@ -60,7 +63,12 @@ public:
 class FootChaos {
 private:
   int id;
+  int tickId = 0;
   b2World *world;
+
+  fs::path path;
+  bool save;
+  float **data;
 
   int sizeOfTeam;
   Car **team1;
@@ -72,14 +80,17 @@ private:
 public:
   int scoreTeam1 = 0;
   int scoreTeam2 = 0;
+  float scoreTeam1Pos = 0;
+  float scoreTeam2Pos = 0;
 
-  FootChaos(int sizeOfTeam, int id);
+  FootChaos(int sizeOfTeam, int id, fs::path chemin);
   ~FootChaos();
 
   void tick(float *inputs);
   void resetPosition();
 
   void setInputs(float *inputs, float *startIndex);
+  void addData(float stearing1, float stearing2);
 };
 
 #endif /* footchaos_hpp */

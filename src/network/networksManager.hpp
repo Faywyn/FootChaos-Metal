@@ -22,6 +22,8 @@ private:
 
   // Games data
   FootChaos **games;
+  bool saveNext = false;
+  fs::path path;
 
   // Metal
   MTL::ComputePipelineState *weightFunctionPSO;
@@ -54,5 +56,9 @@ public:
   void randomizeNetwork(int networkId);
   void copyNetwork(int from, int to);
   void mutateNetwork(int id, float p);
+  void copyNetworkToManager(NetworksManager *manager, int from, int to);
+
+  void saveGame(int player1, int player2, fs::path path);
+  void saveNextGames(bool status, fs::path path);
 };
 #endif /* networksManager_hpp */

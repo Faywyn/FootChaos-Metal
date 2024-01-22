@@ -2,7 +2,9 @@
 #include "../config.hpp"
 
 #include <box2d/box2d.h>
+#include <fstream>
 #include <iostream>
+#include <unistd.h>
 
 // CONST FOR NORMALIZE
 float dMaxCenter =
@@ -27,9 +29,22 @@ float angle(b2Vec2 A, b2Vec2 B, b2Vec2 dirA) {
   return angle;
 }
 
-FootChaos::FootChaos(int sizeOfTeam, int id) {
+FootChaos::FootChaos(int sizeOfTeam, int id, fs::path path) {
   this->id = id;
   this->sizeOfTeam = sizeOfTeam;
+  this->path = path;
+  this->save = path != "";
+
+  if (save) {
+    int nbTicks = TICKS_SECOND * GAME_LENGTH;
+
+    this->data = (float **)malloc(sizeof(float *) * nbTicks);
+
+    for (int i = 0; i < nbTicks; i++) {
+      this->data[i] =
+          (float *)malloc(sizeof(float) * (sizeOfTeam * DATA_PER_PLAYER + 4));
+    }
+  }
 
   if (sizeOfTeam % 2 != 0)
     throw std::invalid_argument("Invalid sizeofteam");
@@ -92,6 +107,23 @@ FootChaos::~FootChaos() {
   }
   free(team1);
   free(team2);
+
+  if (save) {
+    std::ofstream csv(path);
+    csv << FIELD_LENGHT << ";" << FIELD_WIDTH << ";" << GOAL_WIDTH << ";"
+        << BALL_RADIUS << " ; " << TICKS_SECOND << ";" << GAME_LENGTH << ";"
+        << sizeOfTeam / 2 << ";" << sizeOfTeam / 2 << ";" << CAR_LENGHT << ";"
+        << CAR_WIDTH << ";" << LENGTH_ANGLE << "\n";
+
+    int nbTicks = GAME_LENGTH * TICKS_SECOND;
+    int nbData = sizeOfTeam * DATA_PER_PLAYER + 4;
+    for (int j = 0; j < nbTicks; j++) {
+      for (int k = 0; k < nbData; k++) {
+        csv << data[j][k] << (k == nbData - 1 ? "\n" : ";");
+      }
+    }
+    csv.close();
+  }
 }
 
 void FootChaos::tick(float *inputs) {
@@ -100,7 +132,7 @@ void FootChaos::tick(float *inputs) {
   for (int i = 0; i < sizeOfTeam / 2; i++) {
     int indexInput1 = i * OUTPUT_LENGTH + indexStart;
     int indexInput2 =
-        i * OUTPUT_LENGTH + indexStart + sizeOfTeam * OUTPUT_LENGTH;
+        i * OUTPUT_LENGTH + indexStart + sizeOfTeam * OUTPUT_LENGTH / 2;
 
     team1[i]->tick(inputs[indexInput1], inputs[indexInput1 + 1]);
     team2[i]->tick(inputs[indexInput2], inputs[indexInput2 + 1]);
@@ -116,15 +148,31 @@ void FootChaos::tick(float *inputs) {
     scoreTeam2 += 1;
     resetPosition();
   }
+
+  // PosScore
+  float score =
+      pow(ballPos.x / FIELD_LENGHT, 3) * (1 - pow(ballPos.y / FIELD_WIDTH, 2));
+  for (int i = 0; i < sizeOfTeam / 2; i++) {
+    scoreTeam1Pos += score;
+    scoreTeam2Pos -= score;
+  }
+
+  int32 velocityIterations = 6;
+  int32 positionIterations = 2;
+  float timeTick = 5.0f / TICKS_SECOND;
+  world->Step(timeTick, velocityIterations, positionIterations);
+
+  if (save)
+    addData(team1[0]->getSteering(), team2[0]->getSteering());
+
+  tickId++;
 }
 
 void FootChaos::resetPosition() {
   ball->setPosition(0, 0, 0);
   for (int i = 0; i < sizeOfTeam / 2; i++) {
-    team1[i]->setPosition(-(FIELD_LENGHT / sizeOfTeam) * (i + 1) / 2, 0,
-                          -M_PI / 2);
-    team2[i]->setPosition(+(FIELD_LENGHT / sizeOfTeam) * (i + 1) / 2, 0,
-                          +M_PI / 2);
+    team1[i]->setPosition(-(FIELD_LENGHT / sizeOfTeam), 0, -M_PI / 2);
+    team2[i]->setPosition(+(FIELD_LENGHT / sizeOfTeam), 0, +M_PI / 2);
   }
 }
 
@@ -204,5 +252,36 @@ void FootChaos::setInputs(float *inputs, float *startIndex) {
     inputs[indexInput2 + 12] = std::sin(aGoalA2);
     inputs[indexInput2 + 13] = std::cos(aAdv2);
     inputs[indexInput2 + 14] = std::sin(aAdv2);
+  }
+}
+
+void FootChaos::addData(float stearing1, float stearing2) {
+  if (tickId >= TICKS_SECOND * GAME_LENGTH)
+    throw std::invalid_argument("try adding tick data, but game is to long");
+
+  // Global data
+  b2Vec2 ballPos = ball->body->GetPosition();
+  data[tickId][0] = scoreTeam1;
+  data[tickId][1] = scoreTeam2;
+  data[tickId][2] = ballPos.x;
+  data[tickId][3] = ballPos.y;
+
+  int n_ = DATA_PER_PLAYER;
+
+  for (int i = 0; i < (sizeOfTeam / 2); i++) {
+    // équipe 1
+    b2Vec2 v1Pos = team1[i]->body->GetPosition();
+    float v1Angle = team1[i]->body->GetAngle();
+    data[tickId][i * n_ + 0 + 4] = v1Pos.x;
+    data[tickId][i * n_ + 1 + 4] = v1Pos.y;
+    data[tickId][i * n_ + 2 + 4] = v1Angle;
+    data[tickId][i * n_ + 3 + 4] = stearing1;
+    // équipe 2
+    b2Vec2 v2Pos = team2[i]->body->GetPosition();
+    float v2Angle = team2[i]->body->GetAngle();
+    data[tickId][i * n_ + 0 + 4 + (sizeOfTeam / 2) * n_] = v2Pos.x;
+    data[tickId][i * n_ + 1 + 4 + (sizeOfTeam / 2) * n_] = v2Pos.y;
+    data[tickId][i * n_ + 2 + 4 + (sizeOfTeam / 2) * n_] = v2Angle;
+    data[tickId][i * n_ + 3 + 4 + (sizeOfTeam / 2) * n_] = stearing2;
   }
 }

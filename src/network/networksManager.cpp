@@ -33,7 +33,7 @@ NetworksManager::NetworksManager(fs::path path) {
   nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
 
   for (int i = 0; i < nbLayer; i++) {
-    file.read((char *)&nbNeuronPerLayer[i], sizeof(int));
+    file.read((char *)&(nbNeuronPerLayer[i]), sizeof(int));
   }
 
   this->initSystem();
@@ -46,6 +46,7 @@ NetworksManager::NetworksManager(fs::path path) {
       file.read((char *)&cont[j], sizeof(float));
     }
   }
+  file.close();
 };
 
 /// Create new manager (new networks) from params
@@ -134,6 +135,11 @@ NetworksManager::~NetworksManager() {
     network1->release();
   if (network2 != nullptr)
     network2->release();
+
+  for (int i = 0; i < nbGame; i++) {
+    delete games[i];
+  }
+  free(games);
 }
 
 void NetworksManager::saveNetworks(fs::path path) {
@@ -268,7 +274,7 @@ void NetworksManager::initGeneration() {
   for (int iG = 0; iG < nbNetwork / groupSize; iG++) {
     for (int iP = 0; iP < groupSize; iP++) {
       for (int jP = iP + 1; jP < groupSize; jP++) {
-        games[_nbGame] = new FootChaos(2, _nbGame);
+        games[_nbGame] = new FootChaos(2, _nbGame, saveNext ? path : "");
 
         contNet1[_nbGame] = groups[iG][iP];
         contNet2[_nbGame] = groups[iG][jP];
@@ -339,7 +345,6 @@ void NetworksManager::performTickGeneration() {
 
 /// Perform every tick needed for a game
 void NetworksManager::performGeneration(int **groups) {
-
   // Init matchs and groups
   this->groups = groups;
   this->initGeneration();
@@ -360,6 +365,8 @@ void NetworksManager::performGeneration(int **groups) {
     // Perform tick
     performTickGeneration();
   }
+
+  saveNext = false;
 }
 
 /// Get the result of gen
@@ -369,9 +376,10 @@ float **NetworksManager::getScore() {
   // res[i][0]: network id
   // res[i][1]: score
   for (int i = 0; i < nbNetwork; i++) {
-    res[i] = (float *)malloc(sizeof(float) * 2);
+    res[i] = (float *)malloc(sizeof(float) * 3);
     res[i][0] = i;
     res[i][1] = 0;
+    res[i][2] = 0;
   }
 
   // Sum each score
@@ -382,10 +390,16 @@ float **NetworksManager::getScore() {
         res[groups[iG][iP]][1] += games[_nbGame]->scoreTeam1;
         res[groups[iG][jP]][1] += games[_nbGame]->scoreTeam2;
 
+        res[groups[iG][iP]][2] += games[_nbGame]->scoreTeam1Pos;
+        res[groups[iG][jP]][2] += games[_nbGame]->scoreTeam2Pos;
+
         _nbGame++;
       }
     }
   }
+  // Sort the results (randomize when equal)
+  std::sort(res, res + nbNetwork, compareRdm);
+  std::sort(res, res + nbNetwork, compare);
 
   return res;
 }
@@ -394,15 +408,98 @@ float **NetworksManager::getScore() {
 /// Parameters:
 ///  - from
 ///  - to
-void NetworksManager::copyNetwork(int from, int to) {}
+void NetworksManager::copyNetwork(int from, int to) {
+  for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
+    int nbWeigth = nbNeuronPerLayer[iLayer] * nbNeuronPerLayer[iLayer - 1];
+    int start = from * nbWeigth;
+    int end = (from + 1) * nbWeigth;
+    int diff = (to - from) * nbWeigth;
+
+    float *cont = (float *)weights[iLayer]->contents();
+    for (int i = start; i < end; i++) {
+      cont[i + diff] = cont[i];
+    }
+  }
+}
 
 /// Randomize a network
 /// Parameters:
 ///  - id
-void NetworksManager::randomizeNetwork(int id) {}
+void NetworksManager::randomizeNetwork(int id) {
+  for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
+    int nbWeigth = nbNeuronPerLayer[iLayer] * nbNeuronPerLayer[iLayer - 1];
+    int start = id * nbWeigth;
+    int end = (id + 1) * nbWeigth;
+
+    float *cont = (float *)weights[iLayer]->contents();
+    for (int i = start; i < end; i++) {
+      cont[i] = randomFloat();
+    }
+  }
+}
 
 /// Mutate network
 /// Parameters:
 ///  - id
 ///  - p: proba to change a weight
-void NetworksManager::mutateNetwork(int id, float p) {}
+void NetworksManager::mutateNetwork(int id, float p) {
+  for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
+    int nbWeigth = nbNeuronPerLayer[iLayer] * nbNeuronPerLayer[iLayer - 1];
+    int start = id * nbWeigth;
+    int end = (id + 1) * nbWeigth;
+
+    float *cont = (float *)weights[iLayer]->contents();
+    for (int i = start; i < end; i++) {
+      float r = abs(randomFloat());
+      if (r > p)
+        continue;
+      cont[i] += randomFloat();
+    }
+  }
+}
+
+/// Copy network to another (for saving network)
+/// Parameters:
+///  - *manager (the one to copy to)
+///  - from
+///  - to
+void NetworksManager::copyNetworkToManager(NetworksManager *manager, int from,
+                                           int to) {
+  for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
+    int nbWeigth = nbNeuronPerLayer[iLayer] * nbNeuronPerLayer[iLayer - 1];
+    int start1 = from * nbWeigth;
+    int start2 = from * nbWeigth;
+
+    float *cont1 = (float *)weights[iLayer]->contents();
+    float *cont2 = (float *)manager->weights[iLayer]->contents();
+    for (int i = 0; i < nbWeigth; i++) {
+      cont2[i + start2] = cont1[i + start1];
+    }
+  }
+}
+
+/// Perform a game and save it
+/// Parameters:
+///  - player1
+///  - player2
+///  - path (where to save the game)
+void NetworksManager::saveGame(int player1, int player2, fs::path path) {
+  NetworksManager manager = NetworksManager(2, 2, nbLayer, nbNeuronPerLayer);
+
+  int **_groups = (int **)malloc(sizeof(int *));
+  _groups[0] = (int *)malloc(sizeof(int) * 2);
+  _groups[0][0] = 0;
+  _groups[0][1] = 1;
+
+  manager.saveNextGames(true, path);
+  manager.performGeneration((int **)_groups);
+}
+
+/// Save all the next game to path
+/// Parameters:
+///  - status (save or not)
+///  - path
+void NetworksManager::saveNextGames(bool status, fs::path path) {
+  saveNext = status;
+  this->path = path;
+}

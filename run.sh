@@ -1,3 +1,6 @@
-cmake CMakeList.txt
+cmake CMakeLists.txt
 cmake --build .
-./FootChaos
+while ! ./FootChaos
+do
+  sleep 1
+done

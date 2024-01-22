@@ -92,7 +92,7 @@ void Training::performTrain() {
 ///  - saveEveryXn: Save every X generations
 ///  - nbGeneration: -1 for timeless training
 void Training::startTraining(int saveEveryXn, int nbGeneration) {
-  int nbGen_ = 0;
+  int *nbGen_ = &networksManager->nbGeneration;
 
   system("clear");
 
@@ -110,53 +110,79 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
             << "Nb Match Per Gen: " << networksManager->nbGame;
   std::cout << "\033[3;30H"
             << "Nb Group: "
-            << networksManager->nbGame / networksManager->groupSize;
+            << networksManager->nbNetwork / networksManager->groupSize;
 
   // Display border line
-  std::string line = std::string(100, '-');
+  std::string line = std::string(120, '-');
   std::cout << "\033[" << STAT_TAB_START + 0 << ";0H" << line;
   std::cout << "\033[" << STAT_TAB_START + 2 << ";0H" << line;
   std::cout << "\033[" << STAT_TAB_START + NB_STATS + 5 << ";0H" << line;
   std::cout << "\033[" << STAT_TAB_START + NB_STATS + 7 << ";0H" << line;
   std::cout << std::endl;
 
-  while (nbGen_ < nbGeneration || nbGeneration == -1) {
+  while (*nbGen_ < nbGeneration || nbGeneration == -1) {
     uint64_t timeStart = time();
+    float avrg;
+    float avrgPoints;
+    float best;
 
     performTrain();
     float **score = getScore();
-    mutate(score);
+    getScoreData(score, &avrg, &best, &avrgPoints);
 
-    // Display stats
+    // Get stats
     uint64_t duration = time() - timeStart;
     minTime = minTime > duration ? duration : minTime;
     maxTime = maxTime < duration ? duration : maxTime;
-    printOldStat(STAT_TAB_START + 4 + nbGen_ % nbStat, nbGen_,
-                 time() - timeStart);
 
-    std::cout << "\033[" << STAT_TAB_START + 6 + nbStat << ":0H"
+    // Display stats
+    printOldStat(STAT_TAB_START + 4 + (*nbGen_) % nbStat, *nbGen_,
+                 time() - timeStart, avrg, avrgPoints, best,
+                 networksManager->nbGame);
+
+    std::cout << "\033[" << STAT_TAB_START + 6 + nbStat << ":0H\033[0m"
               << "  "
               << "Global Duration: "
               << round((float)(time() - globalTimeStart) / 1000, 100) << "s "
-              << "Min: " << round((float)minTime / 1000, 100) << "s "
-              << "Max: " << round((float)maxTime / 1000, 100) << "s "
-              << std::endl;
+              << "Min: " << GREEN << round((float)minTime / 1000, 100) << "s "
+              << RESET << "Max: " << RED << round((float)maxTime / 1000, 100)
+              << "s " << RESET << std::endl;
+
+    *nbGen_ += 1;
 
     // Saving networks
-    if (nbGen_ % saveEveryXn == 0)
+    if (*nbGen_ % saveEveryXn == 0)
       save();
 
-    nbGen_++;
+    // Saving game
+    if (*nbGen_ % 1 == 0)
+      saveGame(score[0][1], score[0][1]);
+
+    // Mutate network (score free !)
+    mutate(score);
   }
 }
 
 float **Training::getScore() { return networksManager->getScore(); }
 
-void Training::mutate(float **score) {
-  // Sort the results (randomize when equal)
-  std::sort(score, score + networksManager->nbNetwork, compareRdm);
-  std::sort(score, score + networksManager->nbNetwork, compare);
+void Training::getScoreData(float **score, float *avrg, float *best,
+                            float *avrgPoints) {
+  int nbMatchPerNetwork = (networksManager->groupSize - 1);
+  *avrg = 0;
+  *avrgPoints = 0;
+  *best = 0;
 
+  for (int i = 0; i < networksManager->nbNetwork; i++) {
+    float s = score[i][1] / (float)nbMatchPerNetwork;
+    *avrg += s;
+    *avrgPoints += abs(score[i][2]) / (2 * (float)nbMatchPerNetwork);
+    *best = (*best < s) ? s : *best;
+  }
+  *avrg /= networksManager->nbNetwork;
+  *avrgPoints /= networksManager->nbNetwork;
+}
+
+void Training::mutate(float **score) {
   // Creating new Networks (weakest remove)
   for (int i = 0; i < networksManager->nbNetwork * NEW_BLOOD_COEF; i++) {
     float r = (randomFloat() + 1) / 2;
@@ -180,10 +206,16 @@ void Training::mutate(float **score) {
   for (int i = 0; i < networksManager->nbNetwork; i++) {
     float p = (float)(i + 1) / (float)(networksManager->nbNetwork + 1);
     p *= 10;
-    p /= INPUT_LENGTH * INPUT_LENGTH;
-    networksManager->mutateNetwork(i, p);
+    p /= INPUT_LENGTH * networksManager->nbLayer;
+    networksManager->mutateNetwork(score[i][0], p);
 
     free(score[i]);
   }
   free(score);
+}
+
+void Training::saveGame(int player1, int player2) {
+  fs::path p = path.replace_extension("").string() + "_" +
+               std::to_string(networksManager->nbGeneration) + ".txt";
+  networksManager->saveGame(player1, player2, p);
 }

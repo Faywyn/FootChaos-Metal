@@ -22,12 +22,11 @@
 #define TICK_DURATION_COEF 2
 #define TICKS_SECOND 60
 #define GAME_LENGTH (30 * TICK_DURATION_COEF) // s
+
+#define DATA_PER_PLAYER 4
 // ----- GAME CONFIG -----
 
 // ----- NETWORKS CONFIG -----
-#define minWeight (-10)
-#define maxWeight (+10)
-
 #define INPUT_LENGTH 15
 #define OUTPUT_LENGTH 2
 
@@ -35,10 +34,21 @@
 #define COPY_COEF 0.004f
 // ----- NETWORKS CONFIG -----
 
+// ----- COLORS -----
+#define RESET "\033[0m"
+#define RED "\033[31m"
+#define CYAN "\033[32m"
+#define YELLOW "\033[33m"
+#define BLUE "\033[34m"
+#define MAGENTA "\033[35m"
+#define PINK "\033[36m"
+#define GREEN "\033[37m"
+// ----- COLORS -----
+
 // ----- OTHER -----
 #define NB_THREAD 8
 #define STAT_TAB_START 4
-#define NB_STATS 10
+#define NB_STATS 20
 // ----- OTHER -----
 
 #endif /* config_h */

@@ -35,9 +35,8 @@ float round(float x, int n) { return (float)(int)(x * n) / (float)n; }
 void printStat(int line, float p, int sizeBar, uint64_t start,
                uint64_t current) {
 
-  std::cout << "\033[" + std::to_string(line) + ";0H"
-            << "  "
-            << "[" << std::string(floor(p * sizeBar), '=')
+  std::cout << "\033[" << line << ";0H" << RESET << "  "
+            << "[" << CYAN << std::string(floor(p * sizeBar), '=') << RESET
             << std::string(sizeBar - floor(p * sizeBar), '-') << "] "
             << (int)(p * 100) << "% "
             << "Duration: " << round((float)(time() - start) / 1000, 10) << "s "
@@ -47,10 +46,32 @@ void printStat(int line, float p, int sizeBar, uint64_t start,
             << ";0H" << std::endl;
 }
 
-void printOldStat(int line, int id, uint64_t duration) {
-  std::cout << "\033[" + std::to_string(line) + ";0H"
+void printOldStat(int line, int id, uint64_t duration, float avrg,
+                  float avrgPoints, float best, int nbMatchPerGen) {
+
+  int off = 0; // Offset
+  for (int _id = id; _id != 0; _id /= 10) {
+    off += 1;
+  }
+
+  std::cout << "\033[" << line << ";0H" << std::string(100, ' ') << std::endl;
+
+  std::cout << "\033[" << line << ";0H"
             << "  " << id
-            << " | Duration: " << round((float)duration / 1000, 10) << "s "
+            << " | Duration: " << round((float)duration / 1000, 10) << "s";
+
+  std::cout << "\033[" << line << ";" << 23 + off << "H| Average: " << BLUE
+            << round(avrg, 1000) << RESET;
+
+  std::cout << "\033[" << line << ";" << 40 + off
+            << "H| Best: " << round(best, 1000);
+
+  std::cout << "\033[" << line << ";" << 53 + off
+            << "H | Average Points: " << round(avrgPoints, 1000);
+
+  std::cout << "\033[" << line << ";" << 77 + off
+            << "H | Match second: " << GREEN
+            << round(1000 * nbMatchPerGen / (float)duration, 10) << RESET
             << std::string(20, ' ') << std::endl;
   ;
 }

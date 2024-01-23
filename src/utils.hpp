@@ -11,7 +11,8 @@ uint64_t time();
 
 void printStat(int line, float p, int sizeBar, uint64_t start,
                uint64_t current);
-void printOldStat(int line, int id, uint64_t duration);
+void printOldStat(int line, int id, uint64_t duration, float avrg,
+                  float avrgPoints, float best, int nbMatchPerGen);
 
 bool compare(float *a, float *b);
 bool compareRdm(float *a, float *b);

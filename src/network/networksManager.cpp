@@ -127,7 +127,6 @@ void NetworksManager::initSystem() {
 }
 
 NetworksManager::~NetworksManager() {
-  std::cout << "dest" << std::endl;
   free(nbNeuronPerLayer);
 
   if (weightFunctionPSO != nullptr)
@@ -273,13 +272,12 @@ void NetworksManager::initGeneration() {
 
   int _nbGame = 0;
   for (int iG = 0; iG < nbNetwork / groupSize; iG++) {
-    int *groupCont = (int *)groups[iG]->contents();
     for (int iP = 0; iP < groupSize; iP++) {
       for (int jP = iP + 1; jP < groupSize; jP++) {
         games[_nbGame] = new FootChaos(2, _nbGame, saveNext ? path : "");
 
-        contNet1[_nbGame] = groupCont[iP];
-        contNet2[_nbGame] = groupCont[jP];
+        contNet1[_nbGame] = groups[iG][iP];
+        contNet2[_nbGame] = groups[iG][jP];
 
         _nbGame++;
       }
@@ -294,7 +292,7 @@ void NetworksManager::performTickGeneration() {
 
   // Create buffer inputs
   MTL::Buffer *inputs =
-      device->newBuffer(sizeof(float) * INPUT_LENGTH * nbGamePerGroup * 2,
+      device->newBuffer(sizeof(float) * INPUT_LENGTH * nbGame * 2,
                         MTL::ResourceStorageModeShared);
 
   // Dispatch with threads

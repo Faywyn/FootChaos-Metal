@@ -155,7 +155,7 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
       save();
 
     // Saving game
-    if (*nbGen_ % 1 == 0)
+    if (*nbGen_ % 10 == 0)
       saveGame(score[0][1], score[0][1]);
 
     // Mutate network (score free !)

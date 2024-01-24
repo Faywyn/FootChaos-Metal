@@ -5,15 +5,20 @@
 #include <iostream>
 #include <stdlib.h>
 
+/// Car class
+/// Parameters:
+///  - world
 Car::Car(b2World *world) {
   this->world = world;
 
+  // Dynamic of the car
   b2BodyDef carDef;
   carDef.type = b2_dynamicBody;
   carDef.position.Set(0, 0);
   carDef.angle = 0;
   body = world->CreateBody(&carDef);
 
+  // Shape
   b2PolygonShape polyShape;
   polyShape.SetAsBox(CAR_WIDTH / 2, CAR_LENGHT / 2);
 
@@ -25,28 +30,40 @@ Car::Car(b2World *world) {
   body->CreateFixture(&fixtureDef);
 }
 
+/// Car destructor
 Car::~Car() { return; }
 
+/// Get steering
 float Car::getSteering() { return steering; }
+/// Get position
 b2Vec2 Car::getPosition() { return body->GetPosition(); }
+/// Get world vector
 b2Vec2 Car::getWorldVector(b2Vec2 vec) { return body->GetWorldVector(vec); }
 
+/// Get orthogonal speed
 b2Vec2 Car::getOrthogonalSpeed() {
   b2Vec2 ortho = body->GetWorldVector(b2Vec2(0, 1));
   return b2Dot(ortho, body->GetLinearVelocity()) * ortho;
 }
 
+/// Get normal speed
 b2Vec2 Car::getNormalSpeed() {
   b2Vec2 normal = body->GetWorldVector(b2Vec2(1, 0));
   return b2Dot(normal, body->GetLinearVelocity()) * normal;
 }
 
+/// Car set posisition
+/// Parameters:
+///  - x
+///  - y
+///  - angle
 void Car::setPosition(float x, float y, float angle) {
   body->SetLinearVelocity(b2Vec2(0, 0));
   body->SetAngularVelocity(0);
   body->SetTransform(b2Vec2(x, y), angle);
 }
 
+/// Add friction to the car
 void Car::tickFriction() {
   // Normal speed
   b2Vec2 impulsion = body->GetMass() * (-getNormalSpeed());
@@ -70,6 +87,10 @@ void Car::tickFriction() {
   body->ApplyForce(force * orthSpeed, body->GetWorldCenter(), false);
 }
 
+/// Perform a tick on the car
+/// Parameters:
+///  - speedControler (between 0 and 1)
+///  - steeringControler (between 0 and 1)
 void Car::tick(float speedControler, float steeringControler) {
   tickFriction();
 

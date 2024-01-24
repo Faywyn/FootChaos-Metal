@@ -66,13 +66,12 @@ private:
   int tickId = 0;
   b2World *world;
 
-  fs::path path;
-  bool save;
   float **data;
+  bool save;
+  fs::path path;
 
-  int sizeOfTeam;
-  Car **team1;
-  Car **team2;
+  Car *team1;
+  Car *team2;
   Ball *ball;
 
   b2Body *walls;
@@ -83,7 +82,7 @@ public:
   float scoreTeam1Pos = 0;
   float scoreTeam2Pos = 0;
 
-  FootChaos(int sizeOfTeam, int id, fs::path chemin);
+  FootChaos(int id, fs::path chemin);
   ~FootChaos();
 
   void tick(float *inputs);

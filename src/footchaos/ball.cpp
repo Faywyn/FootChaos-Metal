@@ -3,6 +3,9 @@
 
 #include <box2d/box2d.h>
 
+/// Ball class init
+/// Parameters:
+///  - world
 Ball::Ball(b2World *world) {
   this->world = world;
 
@@ -25,34 +28,47 @@ Ball::Ball(b2World *world) {
   body->CreateFixture(&fixtureBallDef);
 }
 
+/// Ball destructor
 Ball::~Ball() { return; }
 
+/// Get orthogonal speed
 b2Vec2 Ball::getOrthogonalSpeed() {
   b2Vec2 ortho = body->GetWorldVector(b2Vec2(0, 1));
   return b2Dot(ortho, body->GetLinearVelocity()) * ortho;
 }
 
+/// Get normal speed
 b2Vec2 Ball::getNormalSpeed() {
   b2Vec2 normalDroit = body->GetWorldVector(b2Vec2(1, 0));
   return b2Dot(normalDroit, body->GetLinearVelocity()) * normalDroit;
 }
+
+/// Get position
 b2Vec2 Ball::getPosition() { return body->GetPosition(); }
+
+/// Get world vector
 b2Vec2 Ball::getWorldVector(b2Vec2 vec) { return body->GetWorldVector(vec); }
 
+/// Set position
+/// Parameters:
+///  - x
+///  - y
+///  - angle
 void Ball::setPosition(float x, float y, float angle) {
   body->SetLinearVelocity(b2Vec2(0, 0));
   body->SetAngularVelocity(0);
   body->SetTransform(b2Vec2(x, y), angle);
 }
 
+/// Add friction to the ball
 void Ball::tickFriction() {
   b2Vec2 speed = body->GetLinearVelocity();
   b2Vec2 force = -0.5 * FRICTION_COEF * speed;
   body->ApplyForce(force, body->GetWorldCenter(), true);
 };
 
+/// Perform a tick
 void Ball::tick() {
-
   tickFriction();
 
   b2Vec2 force = b2Vec2(0, 0);

@@ -5,7 +5,7 @@
 #include <thread>
 #include <vector>
 
-// Between -1 and 1
+/// Random float between -1 and 1
 float randomFloat() {
   std::random_device rand_dev;
   std::mt19937 generator(rand_dev());
@@ -15,6 +15,10 @@ float randomFloat() {
   return r;
 }
 
+/// Random int
+/// Parameters:
+///  - min
+///  - max
 int randomInt(int min, int max) {
   std::random_device rand_dev;
   std::mt19937 generator(rand_dev());
@@ -24,14 +28,26 @@ int randomInt(int min, int max) {
   return r;
 }
 
+/// Get current time
 uint64_t time() {
   using namespace std::chrono;
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
       .count();
 }
 
+/// Round (ex: round(793.249, 10) = 793.2)
+/// Parameters:
+///  - x
+///  - n
 float round(float x, int n) { return (float)(int)(x * n) / (float)n; }
 
+/// Print current stat
+/// Parameters:
+///  - line (console)
+///  - p (percentage done)
+///  - sizeBar (loading bar size)
+///  - start (time)
+///  - current (time)
 void printStat(int line, float p, int sizeBar, uint64_t start,
                uint64_t current) {
 
@@ -46,6 +62,15 @@ void printStat(int line, float p, int sizeBar, uint64_t start,
             << ";0H" << std::endl;
 }
 
+/// Print old stat
+/// Parameters:
+///  - line (console)
+///  - id
+///  - duration
+///  - avrg (score)
+///  - avrgPoint (point score)
+///  - best (score)
+///  - nbMatchPerGen
 void printOldStat(int line, int id, uint64_t duration, float avrg,
                   float avrgPoints, float best, int nbMatchPerGen) {
 
@@ -76,21 +101,31 @@ void printOldStat(int line, int id, uint64_t duration, float avrg,
   ;
 }
 
+/// Print global stat
+/// Parameters:
+///  - duration (global)
+///  - min (duration)
+///  - max (duration)
+void printGlobalStat(float duration, float minD, float maxD) {
+  std::cout << "\033[" << STAT_TAB_START + 6 + NB_STATS << ":0H\033[0m"
+            << "  "
+            << "Global Duration: " << round((float)(duration) / 1000, 100)
+            << "s "
+            << "Min: " << GREEN << round(minD / 1000, 100) << "s " << RESET
+            << "Max: " << RED << round(maxD / 1000, 100) << "s " << RESET
+            << std::endl;
+}
+
+/// Compare results of 2 networks
+/// Parameters:
+///  - *a
+///  - *b
 bool compare(float *a, float *b) {
   return (a[1] > b[1]) || (a[1] == b[1] && a[2] > b[2]);
 }
 
+/// In order to shuffle
+/// Parameters:
+///  - *a
+///  - *b
 bool compareRdm(float *a, float *b) { return randomFloat() > randomFloat(); }
-
-void mutliThread(void (*func)()) {
-  std::vector<std::thread> threads;
-  threads.reserve(NB_THREAD);
-
-  for (int i = 0; i < NB_THREAD; i++) {
-    threads.emplace_back([func]() { func(); });
-  }
-
-  for (std::thread &t : threads) {
-    t.join();
-  }
-}

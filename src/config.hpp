@@ -29,10 +29,14 @@
 // ----- NETWORKS CONFIG -----
 #define INPUT_LENGTH 15
 #define OUTPUT_LENGTH 2
+// ----- NETWORKS CONFIG -----
+
+// ----- TRAINING CONFIG -----
+#define TRAININGS_PATH (fs::current_path() / "trainings")
 
 #define NEW_BLOOD_COEF 0.008f
 #define COPY_COEF 0.004f
-// ----- NETWORKS CONFIG -----
+// ----- TRAINING CONFIG -----
 
 // ----- COLORS -----
 #define RESET "\033[0m"

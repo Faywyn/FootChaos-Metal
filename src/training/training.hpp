@@ -16,21 +16,19 @@ private:
 
 public:
   Training(int nbNetwork, int groupSize, int nbLayer, int *nbNeuronPerLayer,
-           fs::path path);
-  Training(fs::path path);
+           int id);
+  Training(int id);
   ~Training();
 
-  // Create groups
   void init();
-
   void save();
+  void createGroups();
 
+  void performTrain();
   void startTraining(int saveEveryX, int nbGeneration);
   float **getScore();
-  void saveGame(int player1, int player2);
   void mutate(float **score);
 
-  void createGroups();
-  void performTrain();
   void saveMetrics(float best, float avrg, float time);
+  void saveGame(int player1, int player2);
 };

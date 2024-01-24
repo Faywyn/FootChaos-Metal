@@ -19,12 +19,12 @@ private:
   MTL::Buffer *network1;
   MTL::Buffer *network2;
   int **groups;
+  bool created = false;
 
   MTL::CommandQueue *commandQueue;
 
   // Games data
   FootChaos **games;
-  bool saveNext = false;
   fs::path path;
 
   // Metal
@@ -34,9 +34,10 @@ private:
   void initGeneration();
   void initSystem();
   void initBuffer();
+  void initGames();
   void performTickGeneration();
 
-  MTL::Buffer *computeNetworks(MTL::Buffer *inputs);
+  MTL::Buffer *computeNetworks(MTL::Buffer *inputs, int nbGame);
 
 public:
   int nbNetwork;
@@ -58,7 +59,6 @@ public:
   void randomizeNetwork(int networkId);
   void copyNetwork(int from, int to);
   void mutateNetwork(int id, float p);
-  void copyNetworkToManager(NetworksManager *manager, int from, int to);
 
   void saveGame(int player1, int player2, fs::path path);
   void saveNextGames(bool status, fs::path path);

@@ -49,8 +49,8 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-include_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/include)
-link_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/lib)
+include_directories(~/vcpkg/installed/arm64-osx/include)
+link_directories(~/vcpkg/installed/arm64-osx/lib)
 
 add_executable(FootChaosExe ${SRC_FILES} shaders.metallib)
 

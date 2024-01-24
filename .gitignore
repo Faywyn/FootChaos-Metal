@@ -2,7 +2,7 @@
 *.ir
 
 trainings
-FootChaos
+FootChaosExe
 
 shaders.metallib
 .cache

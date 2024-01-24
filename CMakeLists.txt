@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
-project(FootChaos)
+project(FootChaosExe)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_STANDARD 17)
@@ -52,13 +52,13 @@ add_custom_command(
 include_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/include)
 link_directories(~/.vcpkg-clion/vcpkg/installed/arm64-osx/lib)
 
-add_executable(FootChaos ${SRC_FILES} shaders.metallib)
+add_executable(FootChaosExe ${SRC_FILES} shaders.metallib)
 
-target_include_directories(FootChaos
+target_include_directories(FootChaosExe
   SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/metal-cpp
 )
 
-target_link_libraries(FootChaos
+target_link_libraries(FootChaosExe
   ${APPLE_FWK_FOUNDATION}
   ${APPLE_FWK_QUARTZ_CORE}
   ${APPLE_FWK_METAL}

@@ -1,6 +1,6 @@
 cmake CMakeLists.txt
 cmake --build .
-while ! ./FootChaos
+while ! ./FootChaosExe
 do
-  sleep 5
+  sleep 1
 done

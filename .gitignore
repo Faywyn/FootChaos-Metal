@@ -1,7 +1,8 @@
 .DS_STORE
 *.ir
 
-entrainements
+trainings
+FootChaos
 
 shaders.metallib
 .cache

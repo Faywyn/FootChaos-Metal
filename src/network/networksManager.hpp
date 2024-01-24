@@ -20,6 +20,8 @@ private:
   MTL::Buffer *network2;
   int **groups;
 
+  MTL::CommandQueue *commandQueue;
+
   // Games data
   FootChaos **games;
   bool saveNext = false;

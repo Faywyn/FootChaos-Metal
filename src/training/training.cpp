@@ -3,6 +3,7 @@
 #include "config.hpp"
 
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 
 /// Create new training
@@ -134,6 +135,7 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
     uint64_t duration = time() - timeStart;
     minTime = minTime > duration ? duration : minTime;
     maxTime = maxTime < duration ? duration : maxTime;
+    saveMetrics(best, avrg, duration);
 
     // Display stats
     printOldStat(STAT_TAB_START + 4 + (*nbGen_) % nbStat, *nbGen_,
@@ -218,4 +220,13 @@ void Training::saveGame(int player1, int player2) {
   fs::path p = path.replace_extension("").string() + "_" +
                std::to_string(networksManager->nbGeneration) + ".txt";
   networksManager->saveGame(player1, player2, p);
+}
+
+void Training::saveMetrics(float best, float avrg, float time) {
+  fs::path p = path.replace_extension("").string() + "_metrics" + ".txt";
+
+  std::ofstream csv(p, std::ios::app);
+  csv << networksManager->nbGeneration << ";" << best << ";" << avrg << ";"
+      << time << "\n";
+  csv.close();
 }

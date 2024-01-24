@@ -89,7 +89,7 @@ void Car::tick(float speedControler, float steeringControler) {
   if (speedControler < 0 && speed < 0) {
     force *= 0.2;
   }
-  body->ApplyForce(force * orthospeed, body->GetWorldCenter(), false);
+  body->ApplyForce(force * orthospeed, body->GetWorldCenter(), true);
 
   // Modify angle
   float steeringControlerMvmt = steering * (speed / MAX_SPEED);

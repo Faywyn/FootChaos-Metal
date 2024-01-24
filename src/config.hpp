@@ -46,7 +46,7 @@
 // ----- COLORS -----
 
 // ----- OTHER -----
-#define NB_THREAD 8
+#define NB_THREAD 16
 #define STAT_TAB_START 4
 #define NB_STATS 20
 // ----- OTHER -----

@@ -150,8 +150,8 @@ void FootChaos::tick(float *inputs) {
   }
 
   // PosScore
-  float score =
-      pow(ballPos.x / FIELD_LENGHT, 3) * (1 - pow(ballPos.y / FIELD_WIDTH, 2));
+  float score = 0; // pow(ballPos.x / FIELD_LENGHT, 3) * (1 - pow(ballPos.y /
+                   // FIELD_WIDTH, 2));
   for (int i = 0; i < sizeOfTeam / 2; i++) {
     scoreTeam1Pos += score;
     scoreTeam2Pos -= score;

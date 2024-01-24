@@ -15,7 +15,6 @@
 #include "../utils.hpp"
 #include "config.hpp"
 #include "networksManager.hpp"
-
 /// Create manager from data
 /// Parameters:
 ///  - path
@@ -93,7 +92,7 @@ void NetworksManager::initBuffer() {
   }
 }
 
-/// Init device, the metals functions, ...
+/// Init device, metals functions, ...
 void NetworksManager::initSystem() {
   NS::Error *error = nullptr;
 
@@ -124,6 +123,11 @@ void NetworksManager::initSystem() {
         "Failed to created pipeline (weightFunctionPSO) state object, see "
         "error above.");
   }
+
+  // Create command queue
+  commandQueue = device->newCommandQueue();
+  if (commandQueue == nullptr)
+    throw "Impossible to create command queue";
 }
 
 NetworksManager::~NetworksManager() {
@@ -135,6 +139,8 @@ NetworksManager::~NetworksManager() {
     network1->release();
   if (network2 != nullptr)
     network2->release();
+  if (commandQueue != nullptr)
+    commandQueue->release();
 
   for (int i = 0; i < nbGame; i++) {
     delete games[i];
@@ -169,10 +175,7 @@ void NetworksManager::saveNetworks(fs::path path) {
 ///  - *inputs
 MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs) {
 
-  // Create command queue and buffer
-  MTL::CommandQueue *commandQueue = device->newCommandQueue();
-  if (commandQueue == nullptr)
-    throw "Impossible to create command queue";
+  // Create command buffer
   MTL::CommandBuffer *commandBuffer = commandQueue->commandBuffer();
   if (commandBuffer == nullptr)
     throw "Impossible to create command buffer";
@@ -188,7 +191,7 @@ MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs) {
   MTL::Buffer **buffers =
       (MTL::Buffer **)malloc(sizeof(MTL::Buffer *) * (nbLayer - 1));
   MTL::CommandEncoder **encoders = (MTL::CommandEncoder **)malloc(
-      sizeof(MTL::CommandEncoder *) * (nbLayer - 1) * 2);
+      sizeof(MTL::CommandEncoder *) * (nbLayer - 1));
 
   for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
     int sizePreviousLayer = nbNeuronPerLayer[iLayer - 1];
@@ -239,7 +242,7 @@ MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs) {
     computeEncoder->endEncoding();
 
     buffers[iLayer - 1] = inputs;
-    encoders[(iLayer - 1)] = computeEncoder;
+    encoders[iLayer - 1] = computeEncoder;
 
     inputs = resBuffer;
   }
@@ -255,7 +258,7 @@ MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs) {
   }
   dataBuffer->release();
   commandBuffer->release();
-  commandQueue->release();
+  // commandQueue->release();
   free(buffers);
   free(encoders);
 

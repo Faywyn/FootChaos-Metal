@@ -32,4 +32,5 @@ public:
 
   void createGroups();
   void performTrain();
+  void saveMetrics(float best, float avrg, float time);
 };

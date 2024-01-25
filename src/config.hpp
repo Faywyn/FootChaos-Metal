@@ -34,8 +34,9 @@
 // ----- TRAINING CONFIG -----
 #define TRAININGS_PATH (fs::current_path() / "trainings")
 
-#define NEW_BLOOD_COEF 0.008f
-#define COPY_COEF 0.004f
+#define NEW_BLOOD_COEF 0.08f
+#define COPY_COEF 0.04f
+#define NB_WEIGHT_CHANGE 50
 // ----- TRAINING CONFIG -----
 
 // ----- COLORS -----
@@ -50,7 +51,7 @@
 // ----- COLORS -----
 
 // ----- OTHER -----
-#define NB_THREAD 16
+#define NB_THREAD 8
 #define STAT_TAB_START 4
 #define NB_STATS 20
 // ----- OTHER -----

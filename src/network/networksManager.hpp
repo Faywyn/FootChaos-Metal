@@ -46,6 +46,7 @@ public:
   int groupSize;
   int nbGeneration;
   int nbGame;
+  int nbWeightPerNetwork;
 
   NetworksManager(fs::path path);
   NetworksManager(int nbNetwork, int groupSize, int nbLayer,

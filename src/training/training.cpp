@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <thread>
+#include <vector>
 
 /// Create new training
 /// Parameters:
@@ -121,6 +123,8 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
   std::cout << "\033[3;30H"
             << "Nb Group: "
             << networksManager->nbNetwork / networksManager->groupSize;
+  std::cout << "\033[2;60H"
+            << "Weights: " << networksManager->nbWeightPerNetwork;
 
   // Display border line
   std::string line = std::string(120, '-');
@@ -203,34 +207,58 @@ void Training::getScoreData(float **score, float *avrg, float *best,
 /// Parameters:
 ///  **score
 void Training::mutate(float **score) {
-  // Creating new Networks (weakest remove)
-  for (int i = 0; i < networksManager->nbNetwork * NEW_BLOOD_COEF; i++) {
-    float r = (randomFloat() + 1) / 2;
-    float k = (float)i /
-              ((float)networksManager->nbNetwork * networksManager->nbNetwork);
 
-    networksManager->randomizeNetwork(
-        score[networksManager->nbNetwork - i - 1][0]);
+  // Creating new Networks (weakest remove)
+  int nbNetworkNew = networksManager->nbNetwork * NEW_BLOOD_COEF;
+  for (int i = 0; i < nbNetworkNew; i++) {
+    float r = abs(randomFloat());
+    float k = (float)i / (float)nbNetworkNew;
+
+    if (r > k)
+      continue;
+
+    int id = networksManager->nbNetwork - i - 1;
+    networksManager->randomizeNetwork(score[id][0]);
   }
 
   // Copy the best networks (weakest remove)
-  for (int i = 0; i < networksManager->nbNetwork * COPY_COEF; i++) {
-    float r = (randomFloat() + 1) / 2;
-    float k = (float)i / ((float)networksManager->nbNetwork * COPY_COEF);
+  int nbNetworkCopy = networksManager->nbNetwork * COPY_COEF;
+  for (int i = 0; i < nbNetworkCopy; i++) {
+    float r = abs(randomFloat());
+    float k = (float)i / (float)nbNetworkCopy;
 
-    networksManager->copyNetwork(i,
-                                 score[networksManager->nbNetwork - i - 1][0]);
+    if (r > k)
+      continue;
+
+    int id = networksManager->nbNetwork - i - 1;
+    networksManager->copyNetwork(i, score[id][0]);
   }
+
+  std::vector<std::thread> threads;
+  threads.reserve(NB_THREAD);
 
   // Mutate every network (weakest have more change to be mutate)
-  for (int i = 0; i < networksManager->nbNetwork; i++) {
-    float p = (float)(i + 1) / (float)(networksManager->nbNetwork + 1);
-    p *= 10;
-    p /= INPUT_LENGTH * networksManager->nbLayer;
-    networksManager->mutateNetwork(score[i][0], p);
+  for (int i = 0; i < NB_THREAD; i++) {
+    threads.emplace_back([i, score, this]() {
+      int n = networksManager->nbNetwork;
+      int start = i * n / NB_THREAD;
+      int end = (i == NB_THREAD - 1) ? n : (i + 1) * n / NB_THREAD;
+      for (int i = start; i < end; i++) {
+        float p = (float)(i + 1) / (float)(networksManager->nbNetwork);
+        // "NB_WEIGHT_CHANGE" weights change per network on average (depending
+        // on i)
+        p /= (float)networksManager->nbWeightPerNetwork / NB_WEIGHT_CHANGE;
+        networksManager->mutateNetwork(score[i][0], p);
 
-    free(score[i]);
+        free(score[i]);
+      }
+    });
   }
+
+  for (std::thread &t : threads) {
+    t.join();
+  }
+
   free(score);
 }
 

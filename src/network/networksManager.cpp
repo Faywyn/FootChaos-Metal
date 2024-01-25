@@ -111,10 +111,12 @@ void NetworksManager::initBuffer() {
   this->network2 =
       device->newBuffer(sizeof(int) * nbGame, MTL::ResourceStorageModeShared);
 
+  nbWeightPerNetwork = 0;
   weights = (MTL::Buffer **)malloc(sizeof(MTL::Buffer *) * nbLayer);
   for (int i = 1; i < nbLayer; i++) {
-    int nbWeigth = nbNetwork * nbNeuronPerLayer[i] * nbNeuronPerLayer[i - 1];
-    weights[i] = device->newBuffer(sizeof(float) * nbWeigth,
+    int nbWeigth = nbNeuronPerLayer[i] * nbNeuronPerLayer[i - 1];
+    nbWeightPerNetwork += nbWeigth;
+    weights[i] = device->newBuffer(sizeof(float) * nbNetwork * nbWeigth,
                                    MTL::ResourceStorageModeShared);
   }
 }
@@ -197,8 +199,9 @@ void NetworksManager::saveNetworks(fs::path path) {
 /// Compute all network with provided inputs
 /// Parameters:
 ///  - *inputs
-///  - nbGame (in case we want 1 for saving)
-MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs, int nbGame) {
+///  - _nbGame (in case we want 1 for saving)
+MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs,
+                                              int _nbGame) {
   // Create command buffer
   MTL::CommandBuffer *commandBuffer = commandQueue->commandBuffer();
   if (commandBuffer == nullptr)
@@ -219,18 +222,19 @@ MTL::Buffer *NetworksManager::computeNetworks(MTL::Buffer *inputs, int nbGame) {
     MTL::Buffer *dataBuffer =
         device->newBuffer(sizeof(int) * 2, MTL::ResourceStorageModeShared);
     int *bufferDataCont = (int *)dataBuffer->contents();
-    bufferDataCont[0] = 0; // Layer size
-    bufferDataCont[1] = 0; // Previous layer size
+    bufferDataCont[0] = sizeLayer;         // Layer size
+    bufferDataCont[1] = sizePreviousLayer; // Previous layer size
 
     // Res of a layer
-    MTL::Buffer *resBuffer = device->newBuffer(
-        sizeof(float) * sizeLayer * nbGame * 2, MTL::ResourceStorageModeShared);
+    MTL::Buffer *resBuffer =
+        device->newBuffer(sizeof(float) * sizeLayer * _nbGame * 2,
+                          MTL::ResourceStorageModeShared);
     if (resBuffer == nullptr)
       throw std::invalid_argument("Impossible to create result buffer (" +
                                   std::to_string(iLayer) + ")");
 
     // Nb thread
-    int nbExec = nbGame * sizeLayer * 2;
+    int nbExec = _nbGame * sizeLayer * 2;
     MTL::Size gridSize = MTL::Size::Make(nbExec, 1, 1);
 
     NS::UInteger threadGroupSize =
@@ -406,8 +410,8 @@ float **NetworksManager::getScore() {
   for (int i = 0; i < nbNetwork; i++) {
     res[i] = (float *)malloc(sizeof(float) * 3);
     res[i][0] = i;
-    res[i][1] = 0;
-    res[i][2] = 0;
+    res[i][1] = 0.0f;
+    res[i][2] = 0.0f;
   }
 
   // Sum each score

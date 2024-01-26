@@ -5,6 +5,7 @@ trainings
 FootChaosExe
 run.sh
 run-debug.sh
+compile.sh
 
 shaders.metallib
 .cache

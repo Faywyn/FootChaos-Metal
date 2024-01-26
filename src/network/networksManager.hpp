@@ -1,43 +1,40 @@
-#ifndef networksManager_hpp
-#define networksManager_hpp
+#pragma once
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 #include <filesystem>
+#include <thread>
+#include <vector>
 
-#include "../config.hpp"
 #include "../footchaos/footchaos.hpp"
+#include "commandManager.hpp"
 
 namespace fs = std::filesystem;
 
+class CommandManager;
 class NetworksManager {
 private:
-  // Weights[i] is a list of all weights from layer i
-  // in every network
-  MTL::Buffer **weights;
-  MTL::Buffer *network1;
-  MTL::Buffer *network2;
+  // Groups for the gen
   int **groups;
   bool created = false;
-
-  MTL::CommandQueue *commandQueue;
 
   // Games data
   FootChaos **games;
   fs::path path;
 
   // Metal
-  MTL::ComputePipelineState *weightFunctionPSO;
   MTL::Device *device;
 
   void initGeneration();
   void initSystem();
   void initBuffer();
   void initGames();
-  void performTickGeneration();
+  void performTickGeneration(int tickId, std::vector<std::thread> *threads);
+  void setInputs(int tickId, std::vector<std::thread> *threads);
 
-  MTL::Buffer *computeNetworks(MTL::Buffer *inputs, int nbGame);
+  void computeNetworks(int _nbGame, int tickId);
+  MTL::CommandBuffer *createCommandBuffer(int _nbGame);
 
 public:
   int nbNetwork;
@@ -47,6 +44,19 @@ public:
   int nbGeneration;
   int nbGame;
   int nbWeightPerNetwork;
+
+  MTL::CommandQueue *commandQueue;
+  MTL::ComputePipelineState *weightFunctionPSO;
+  // Weights[i] is a list of all weights from layer i
+  // in every network
+  MTL::Buffer **weights;
+  // Data needed for neurone calcul
+  MTL::Buffer **data;
+  // Result of each layer
+  MTL::Buffer ***result;
+  // List of network in each game
+  MTL::Buffer *network1;
+  MTL::Buffer *network2;
 
   NetworksManager(fs::path path);
   NetworksManager(int nbNetwork, int groupSize, int nbLayer,
@@ -64,4 +74,3 @@ public:
   void saveGame(int player1, int player2, fs::path path);
   void saveNextGames(bool status, fs::path path);
 };
-#endif /* networksManager_hpp */

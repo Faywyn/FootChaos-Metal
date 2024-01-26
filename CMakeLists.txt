@@ -20,6 +20,8 @@ set(SRC_FILES
   src/config.hpp
   src/network/networksManager.hpp
   src/network/networksManager.cpp
+  src/network/commandManager.hpp
+  src/network/commandManager.cpp
   src/footchaos/footchaos.hpp
   src/footchaos/footchaos.cpp
   src/footchaos/ball.cpp

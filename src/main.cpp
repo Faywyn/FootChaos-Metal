@@ -11,36 +11,19 @@
 int main(int argc, const char *argv[]) {
   srand(static_cast<unsigned int>(time()));
 
-  int nbNetwork = 500;
-  int nbLayer = 8;
-  int groupSize = 10;
-  int _nbNeuronPerLayer = INPUT_LENGTH * 2;
-  int *nbNeuronPerLayer = (int *)malloc(sizeof(int) * nbLayer);
+  int id = std::stoi(argv[1]);
+  bool create = std::stoi(argv[2]) == 1;
 
-  nbNeuronPerLayer[0] = INPUT_LENGTH; // 15
-  nbNeuronPerLayer[1] = 20;
-  nbNeuronPerLayer[2] = 20;
-  nbNeuronPerLayer[3] = 20;
-  nbNeuronPerLayer[4] = 16;
-  nbNeuronPerLayer[5] = 10;
-  nbNeuronPerLayer[6] = 6;
-  nbNeuronPerLayer[7] = 2;
-  // for (int i = 0; i < nbLayer; i++) {
-  //   nbNeuronPerLayer[i] = INPUT_LENGTH * 2;
-  // }
-  // for (int i = 1; i < 10; i++) {
-  //   nbNeuronPerLayer[nbLayer - i] = OUTPUT_LENGTH + i * 3;
-  // }
-  nbNeuronPerLayer[nbLayer - 1] = OUTPUT_LENGTH;
+  if (create) {
+    int nbNetwork = std::stoi(argv[3]);
+    int groupSize = std::stoi(argv[4]);
 
-  // Training *training =
-  //     new Training(nbNetwork, groupSize, nbLayer, nbNeuronPerLayer, 2);
-  Training *training = new Training(2);
+    Training training = Training(nbNetwork, groupSize, NB_LAYER,
+                                 (int *)NB_NEURON_PER_LAYER, id);
+    training.save();
+  }
 
+  Training *training = new Training(id);
   training->startTraining(10, -1);
-
-  delete training;
-  free(nbNeuronPerLayer);
-
   return 1;
 }

@@ -1,5 +1,6 @@
 #include "footchaos.hpp"
 #include "../config.hpp"
+#include "utils.hpp"
 
 #include <box2d/box2d.h>
 #include <fstream>
@@ -47,10 +48,11 @@ float angle(b2Vec2 A, b2Vec2 B, b2Vec2 dirA) {
 ///  - sizeOfTeam (num of car)
 ///  - id
 ///  - path ("" for no save)
-FootChaos::FootChaos(int id, fs::path path) {
+FootChaos::FootChaos(int id, bool random, fs::path path) {
   this->id = id;
   this->path = path;
   this->save = path != "";
+  this->random = random;
 
   // Malloc data if needed for save
   if (save) {
@@ -187,8 +189,9 @@ void FootChaos::tick(float *inputs) {
 /// Reset position
 void FootChaos::resetPosition() {
   ball->setPosition(0, 0, 0);
-  team1->setPosition(-FIELD_LENGHT / 2, 0, -M_PI / 2);
-  team2->setPosition(+FIELD_LENGHT / 2, 0, +M_PI / 2);
+  float r = random ? randomFloat() * 0.9 : 0;
+  team1->setPosition(-FIELD_LENGHT / 2, +r * FIELD_WIDTH, -M_PI / 2);
+  team2->setPosition(+FIELD_LENGHT / 2, -r * FIELD_WIDTH, +M_PI / 2);
 }
 
 /// Set the inputs for the networks

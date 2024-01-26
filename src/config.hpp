@@ -1,5 +1,4 @@
-#ifndef config_h
-#define config_h
+#pragma once
 
 // ----- GAME CONFIG -----
 #define FIELD_LENGHT 512.0f
@@ -29,6 +28,10 @@
 // ----- NETWORKS CONFIG -----
 #define INPUT_LENGTH 15
 #define OUTPUT_LENGTH 2
+
+#define NB_LAYER 8
+const int NB_NEURON_PER_LAYER[NB_LAYER] = {INPUT_LENGTH, 20, 20, 20,
+                                           16,           10, 6,  OUTPUT_LENGTH};
 // ----- NETWORKS CONFIG -----
 
 // ----- TRAINING CONFIG -----
@@ -55,5 +58,3 @@
 #define STAT_TAB_START 4
 #define NB_STATS 20
 // ----- OTHER -----
-
-#endif /* config_h */

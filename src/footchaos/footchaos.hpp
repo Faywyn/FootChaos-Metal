@@ -1,5 +1,4 @@
-#ifndef footchaos_hpp
-#define footchaos_hpp
+#pragma once
 
 #include <box2d/box2d.h>
 #include <filesystem>
@@ -75,6 +74,7 @@ private:
   Ball *ball;
 
   b2Body *walls;
+  bool random;
 
 public:
   int scoreTeam1 = 0;
@@ -82,7 +82,7 @@ public:
   float scoreTeam1Pos = 0;
   float scoreTeam2Pos = 0;
 
-  FootChaos(int id, fs::path chemin);
+  FootChaos(int id, bool random, fs::path chemin);
   ~FootChaos();
 
   void tick(float *inputs);
@@ -91,5 +91,3 @@ public:
   void setInputs(float *inputs, float *startIndex);
   void addData(float stearing1, float stearing2);
 };
-
-#endif /* footchaos_hpp */

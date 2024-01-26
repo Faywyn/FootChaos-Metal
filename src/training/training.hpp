@@ -1,7 +1,8 @@
+#pragma once
+
 #include "../network/networksManager.hpp"
 
 #include <filesystem>
-
 namespace fs = std::filesystem;
 
 class Training {

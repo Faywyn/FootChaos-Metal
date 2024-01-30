@@ -94,6 +94,10 @@ void Car::tickFriction() {
 void Car::tick(float speedControler, float steeringControler) {
   tickFriction();
 
+  // Inputs beetween -1 and +1
+  speedControler = speedControler * 2 - 1;
+  steeringControler = steeringControler * 2 - 1;
+
   if (abs(steeringControler - steering) > MAX_STEERING_SPEED) {
     steering += (steeringControler - steering) > 0 ? +MAX_STEERING_SPEED
                                                    : -MAX_STEERING_SPEED;

@@ -159,6 +159,12 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
                  time() - timeStart, avrg, avrgPoints, best,
                  networksManager->nbGame);
 
+    std::cout << "\033["
+              << STAT_TAB_START + 4 + (*nbGen_ + NB_STATS - 1) % nbStat
+              << ";1H " << std::endl;
+    std::cout << "\033[" << STAT_TAB_START + 4 + (*nbGen_) % nbStat << ";1H>"
+              << std::endl;
+
     // Display global stats
     printGlobalStat(time() - globalTimeStart, minTime, maxTime);
 
@@ -170,7 +176,7 @@ void Training::startTraining(int saveEveryXn, int nbGeneration) {
 
     // Saving game
     if (*nbGen_ % 10 == 0)
-      saveGame(score[0][1], score[0][1]);
+      saveGame(score[0][0], score[1][0]);
 
     // Mutate network (score is free !)
     mutate(score);

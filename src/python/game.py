@@ -5,27 +5,23 @@ from pygame.locals import *
 import sys
 import os
 
-# path = ("~/DevWorkspace/GitHub/FootChaos-Metal/trainings/")
 path = (os.getcwd() + "/trainings/")
 
 trainingId = int(sys.argv[1])
 matchNb = int(sys.argv[2] or -1)
 maxNb = int(sys.argv[3] or -1)
+TICKS_COEF = int(sys.argv[4] or 1)
 
-# Afficher en  continue
 continusPrint = (maxNb != (-1))
 
 RATIO: float = 10 * 1/9
 BORDER: int = 10
 
-TICKS_COEF = 1.5
 
 red = (224, 59, 4)
 blue = (45, 83, 207)
 
 def printCar(x, y, angle, steering, color):
-    # Les voitures sont des rectangles de longueur CAR_LENGTH et de largeur CAR_WIDTH
-    # On va donc calculer les coordonnées des 3 sommets du triangle
 
     x = float(x) + CAR_WIDTH / 2 + BORDER/2
     y = float(y) + CAR_LENGTH / 2 - BORDER/2
@@ -185,8 +181,8 @@ while ((matchNb < maxNb) or not continusPrint):
                 if (tick == 0):
                     continue
 
-                #if (tick % TICKS_COEF != 0):
-                #    continue
+                if (tick % TICKS_COEF != 0):
+                   continue
 
                 if (tick % TICKS_SECOND == 0):
                     print(ligne)
@@ -256,7 +252,7 @@ while ((matchNb < maxNb) or not continusPrint):
                 screen.blit(text_surface, (2 * BORDER, BORDER))
 
                 # Afficher la barre de progression
-                screen.fill("grey", pygame.Rect(BORDER, BORDER / 2,  (2 * LENGTH * RATIO) * (tick / (GAME_LENGTH * TICKS_SECOND)), 5))
+                screen.fill("grey", pygame.Rect(BORDER, BORDER / 2.5,  (2 * LENGTH * RATIO) * (tick / (GAME_LENGTH * TICKS_SECOND)), BORDER / 5))
 
                 # Afficher les buts
                 screen.fill(red, pygame.Rect(0, RATIO * (WIDTH - GOAL_WIDTH) + BORDER, BORDER, RATIO * (GOAL_WIDTH * 2)))
@@ -284,6 +280,6 @@ while ((matchNb < maxNb) or not continusPrint):
                 # Affichez le contenu de l'écran
                 pygame.display.flip()
 
-                clock.tick(TICKS_SECOND * TICKS_COEF)
+                clock.tick(TICKS_SECOND)
 
         pygame.quit()

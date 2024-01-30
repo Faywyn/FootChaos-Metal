@@ -141,14 +141,19 @@ void NetworksManager::initBuffer() {
     cont[1] = nbNeuronPerLayer[i - 1];
   }
 
-  for (int i = 0; i < nbLayer; i++) {
-    // Set result Buffers
-    result[0][i] =
-        device->newBuffer(sizeof(float) * nbNeuronPerLayer[i] * nbGame * 2,
+  for (int k = 0; k < 2; k++) {
+    for (int i = 1; i < nbLayer - 1; i++) {
+      // Set result Buffers
+      result[k][i] =
+          device->newBuffer(sizeof(float) * nbNeuronPerLayer[i] * nbGame * 2,
+                            MTL::ResourceStorageModePrivate);
+    }
+    result[k][0] =
+        device->newBuffer(sizeof(float) * nbNeuronPerLayer[0] * nbGame * 2,
                           MTL::ResourceStorageModeShared);
-    result[1][i] =
-        device->newBuffer(sizeof(float) * nbNeuronPerLayer[i] * nbGame * 2,
-                          MTL::ResourceStorageModeShared);
+    result[k][nbLayer - 1] = device->newBuffer(
+        sizeof(float) * nbNeuronPerLayer[nbLayer - 1] * nbGame * 2,
+        MTL::ResourceStorageModeShared);
   }
 }
 
@@ -453,21 +458,21 @@ void NetworksManager::saveGame(int player1, int player2, fs::path path) {
   startIndex[1] = INPUT_LENGTH;
 
   // Set up the group (no need for realock)
-  float *net1Cont = (float *)network1->contents();
-  float *net2Cont = (float *)network2->contents();
+  int *net1Cont = (int *)network1->contents();
+  int *net2Cont = (int *)network2->contents();
 
   net1Cont[0] = player1;
   net2Cont[0] = player2;
 
+  MTL::Buffer *res = result[0][nbLayer - 1];
+  MTL::Buffer *input = result[0][0];
+  float *resCont = (float *)res->contents();
+  float *inputsCont = (float *)input->contents();
+
   // Performing the game
   for (int iTick = 0; iTick < GAME_LENGTH * TICKS_SECOND; iTick++) {
-    float *inputsCont = (float *)result[0][0]->contents();
-
     game.setInputs(inputsCont, startIndex);
-
     computeNetworks(1, 0);
-    MTL::Buffer *res = result[0][nbLayer - 1];
-    float *resCont = (float *)res->contents();
 
     game.tick(resCont);
   }

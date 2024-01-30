@@ -16,16 +16,16 @@ kernel void networksComputeWeight(device float *inputs,
 
   // Determine index of Network, Neuron, Weight, ...
   int gameId = index / (2 * sizeLayer);
-  int networkIdAbs = (index - gameId * sizeLayer * 2) / sizeLayer;
+  int networkIdAbs = index / sizeLayer;
   int networkId = (networkIdAbs % 2 == 0) ? network1[gameId] : network2[gameId];
   int depth = index % sizeLayer;
-
+    
   int weightIndexStart = networkId * nbWeightLayer + depth * sizePreviousLayer;
-  int inputIndexStart = (2 * gameId + networkIdAbs) * sizePreviousLayer;
+  int inputIndexStart = networkIdAbs * sizePreviousLayer;
 
   result[index] = 0;
   for (int i = 0; i < sizePreviousLayer; i++) {
-    result[index] += networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
+    result[index] = result[index] + networksWeights[weightIndexStart + i] * inputs[inputIndexStart + i];
   }
 
   // Pass activation function

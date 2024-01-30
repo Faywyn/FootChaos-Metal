@@ -11,6 +11,14 @@
 int main(int argc, const char *argv[]) {
   srand(static_cast<unsigned int>(time()));
 
+  if (argc < 3 || (std::stoi(argv[2]) == 1) && argc < 5) {
+    std::cout
+        << "./FootChaos id_training 0 (run existing training)\n"
+        << "./FootChaos id_training 1 nbNetwork groupSize (create training)"
+        << std::endl;
+    throw std::invalid_argument("Invalid command argument, see message above");
+  }
+
   int id = std::stoi(argv[1]);
   bool create = std::stoi(argv[2]) == 1;
 

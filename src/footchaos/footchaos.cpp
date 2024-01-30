@@ -177,7 +177,7 @@ void FootChaos::tick(float *inputs) {
   // Perform global world tick
   int32 velocityIterations = 6;
   int32 positionIterations = 2;
-  float timeTick = 5.0f / TICKS_SECOND;
+  float timeTick = 1.0f / TICKS_SECOND;
   world->Step(timeTick, velocityIterations, positionIterations);
 
   if (save)
@@ -189,9 +189,17 @@ void FootChaos::tick(float *inputs) {
 /// Reset position
 void FootChaos::resetPosition() {
   ball->setPosition(0, 0, 0);
-  float r = random ? randomFloat() * 0.9 : 0;
-  team1->setPosition(-FIELD_LENGHT / 2, +r * FIELD_WIDTH, -M_PI / 2);
-  team2->setPosition(+FIELD_LENGHT / 2, -r * FIELD_WIDTH, +M_PI / 2);
+  if (random == false) {
+    team1->setPosition(-FIELD_LENGHT / 2, 0, -M_PI / 2);
+    team2->setPosition(+FIELD_LENGHT / 2, 0, +M_PI / 2);
+    return;
+  }
+  float r1 = abs(randomFloat()) * 0.7;
+  float r2 = randomFloat() * 0.9;
+  float r3 = randomFloat();
+
+  team1->setPosition(-r1 * FIELD_LENGHT, +r2 * FIELD_WIDTH, r3 * M_PI);
+  team2->setPosition(+r1 * FIELD_LENGHT, -r2 * FIELD_WIDTH, r3 * M_PI - M_PI);
 }
 
 /// Set the inputs for the networks

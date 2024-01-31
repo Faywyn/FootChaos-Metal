@@ -88,6 +88,6 @@ public:
   void tick(float *inputs);
   void resetPosition();
 
-  void setInputs(float *inputs, float *startIndex);
+  void setInputs(float *inputsDataTrig, float *inputsDataNorm, int startIndex);
   void addData(float stearing1, float stearing2);
 };

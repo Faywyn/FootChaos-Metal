@@ -206,12 +206,10 @@ void FootChaos::resetPosition() {
 /// Parameters:
 ///  - *inputs (tab to edit)
 ///  - *startIndex (where to edit inputs)
-void FootChaos::setInputs(float *inputs, float *startIndex) {
+void FootChaos::setInputs(float *inputsDataTrig, float *inputsDataNorm,
+                          int startIndex) {
   // Get ball data
   b2Vec2 ballPos = ball->getPosition();
-
-  int indexInput1 = startIndex[0];
-  int indexInput2 = startIndex[1];
 
   b2Vec2 pos1 = team1->getPosition();
   b2Vec2 pos2 = team2->getPosition();
@@ -243,43 +241,75 @@ void FootChaos::setInputs(float *inputs, float *startIndex) {
   float aAdv1 = angle(pos1, pos2, ortho1);
   float aAdv2 = angle(pos2, pos1, ortho2);
 
-  inputs[indexInput1 + 0] = normalize(dCenter1, 0, dMaxCenter, -1, 1);
-  inputs[indexInput1 + 1] = normalize(dBall1, 0, dMaxBall, -1, 1);
-  inputs[indexInput1 + 2] = normalize(dGoalA1, 0, dMaxGoal, -1, 1);
-  inputs[indexInput1 + 3] = normalize(dAdv1, 0, dMaxAdv, -1, 1);
-  inputs[indexInput1 + 4] =
-      normalize(+pos1.x, -FIELD_LENGHT, FIELD_LENGHT, -1, 1);
-  inputs[indexInput1 + 5] =
-      normalize(+pos1.y, -FIELD_WIDTH, FIELD_WIDTH, -1, 1);
-  inputs[indexInput1 + 6] = normalize(+speed1, -MAX_SPEED, MAX_SPEED, -1, 1);
+  int index1N = (startIndex * 2) * INPUT_NORM_DATA_LENGTH * 3;
+  int index1T = (startIndex * 2) * INPUT_TRIG_DATA_LENGTH;
+  inputsDataNorm[index1N + 0] = dCenter1;
+  inputsDataNorm[index1N + 1] = 0;
+  inputsDataNorm[index1N + 2] = dMaxCenter;
 
-  inputs[indexInput1 + 7] = std::cos(aCenter1);
-  inputs[indexInput1 + 8] = std::sin(aCenter1);
-  inputs[indexInput1 + 9] = std::cos(aBall1);
-  inputs[indexInput1 + 10] = std::sin(aBall1);
-  inputs[indexInput1 + 11] = std::cos(aGoalA1);
-  inputs[indexInput1 + 12] = std::sin(aGoalA1);
-  inputs[indexInput1 + 13] = std::cos(aAdv1);
-  inputs[indexInput1 + 14] = std::sin(aAdv1);
+  inputsDataNorm[index1N + 3] = dBall1;
+  inputsDataNorm[index1N + 4] = 0;
+  inputsDataNorm[index1N + 5] = dMaxBall;
 
-  inputs[indexInput2 + 0] = normalize(dCenter2, 0, dMaxCenter, -1, 1);
-  inputs[indexInput2 + 1] = normalize(dBall2, 0, dMaxBall, -1, 1);
-  inputs[indexInput2 + 2] = normalize(dGoalA2, 0, dMaxGoal, -1, 1);
-  inputs[indexInput2 + 3] = normalize(dAdv2, 0, dMaxAdv, -1, 1);
-  inputs[indexInput2 + 4] =
-      normalize(-pos2.x, -FIELD_LENGHT, FIELD_LENGHT, -1, 1);
-  inputs[indexInput2 + 5] =
-      normalize(-pos2.y, -FIELD_WIDTH, FIELD_WIDTH, -1, 1);
-  inputs[indexInput2 + 6] = normalize(-speed2, -MAX_SPEED, MAX_SPEED, -1, 1);
+  inputsDataNorm[index1N + 6] = dGoalA1;
+  inputsDataNorm[index1N + 7] = 0;
+  inputsDataNorm[index1N + 8] = dMaxGoal;
 
-  inputs[indexInput2 + 7] = std::cos(aCenter2);
-  inputs[indexInput2 + 8] = std::sin(aCenter2);
-  inputs[indexInput2 + 9] = std::cos(aBall2);
-  inputs[indexInput2 + 10] = std::sin(aBall2);
-  inputs[indexInput2 + 11] = std::cos(aGoalA2);
-  inputs[indexInput2 + 12] = std::sin(aGoalA2);
-  inputs[indexInput2 + 13] = std::cos(aAdv2);
-  inputs[indexInput2 + 14] = std::sin(aAdv2);
+  inputsDataNorm[index1N + 9] = dAdv1;
+  inputsDataNorm[index1N + 10] = 0;
+  inputsDataNorm[index1N + 11] = dMaxAdv;
+
+  inputsDataNorm[index1N + 12] = pos1.x;
+  inputsDataNorm[index1N + 13] = -FIELD_LENGHT;
+  inputsDataNorm[index1N + 14] = FIELD_LENGHT;
+
+  inputsDataNorm[index1N + 15] = pos1.y;
+  inputsDataNorm[index1N + 16] = -FIELD_WIDTH;
+  inputsDataNorm[index1N + 17] = FIELD_WIDTH;
+
+  inputsDataNorm[index1N + 18] = speed1;
+  inputsDataNorm[index1N + 19] = -MAX_SPEED;
+  inputsDataNorm[index1N + 20] = MAX_SPEED;
+
+  inputsDataTrig[index1T + 0] = aCenter1;
+  inputsDataTrig[index1T + 1] = aBall1;
+  inputsDataTrig[index1T + 2] = aGoalA1;
+  inputsDataTrig[index1T + 3] = aAdv1;
+
+  int index2N = (startIndex * 2 + 1) * INPUT_NORM_DATA_LENGTH * 3;
+  int index2T = (startIndex * 2 + 1) * INPUT_TRIG_DATA_LENGTH;
+  inputsDataNorm[index2N + 0] = dCenter2;
+  inputsDataNorm[index2N + 1] = 0;
+  inputsDataNorm[index2N + 2] = dMaxCenter;
+
+  inputsDataNorm[index2N + 3] = dBall2;
+  inputsDataNorm[index2N + 4] = 0;
+  inputsDataNorm[index2N + 5] = dMaxBall;
+
+  inputsDataNorm[index2N + 6] = dGoalA2;
+  inputsDataNorm[index2N + 7] = 0;
+  inputsDataNorm[index2N + 8] = dMaxGoal;
+
+  inputsDataNorm[index2N + 9] = dAdv2;
+  inputsDataNorm[index2N + 10] = 0;
+  inputsDataNorm[index2N + 11] = dMaxAdv;
+
+  inputsDataNorm[index2N + 12] = -pos2.x;
+  inputsDataNorm[index2N + 13] = -FIELD_LENGHT;
+  inputsDataNorm[index2N + 14] = FIELD_LENGHT;
+
+  inputsDataNorm[index2N + 15] = -pos2.y;
+  inputsDataNorm[index2N + 16] = -FIELD_WIDTH;
+  inputsDataNorm[index2N + 17] = FIELD_WIDTH;
+
+  inputsDataNorm[index2N + 18] = speed2;
+  inputsDataNorm[index2N + 19] = -MAX_SPEED;
+  inputsDataNorm[index2N + 20] = MAX_SPEED;
+
+  inputsDataTrig[index1T + 0] = aCenter2;
+  inputsDataTrig[index1T + 1] = aBall2;
+  inputsDataTrig[index1T + 2] = aGoalA2;
+  inputsDataTrig[index1T + 3] = aAdv2;
 }
 
 /// Add data (save)

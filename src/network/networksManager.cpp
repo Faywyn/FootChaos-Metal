@@ -111,6 +111,9 @@ NetworksManager::~NetworksManager() {
     delete games[i];
   }
   free(games);
+  inputDataTrig->release();
+  inputDataNorm->release();
+  inputData->release();
 }
 
 /// Create buffers for games and networks
@@ -121,6 +124,14 @@ void NetworksManager::initBuffer() {
   this->network2 =
       device->newBuffer(sizeof(int) * nbGame, MTL::ResourceStorageModeShared);
   this->data = (MTL::Buffer **)malloc(sizeof(MTL::Buffer *) * nbLayer);
+  this->inputData =
+      device->newBuffer(sizeof(int) * 3, MTL::ResourceStorageModeShared);
+  this->inputDataNorm =
+      device->newBuffer(sizeof(float) * nbGame * 2 * 3 * INPUT_NORM_DATA_LENGTH,
+                        MTL::ResourceStorageModeShared);
+  this->inputDataTrig =
+      device->newBuffer(sizeof(float) * nbGame * 2 * INPUT_TRIG_DATA_LENGTH,
+                        MTL::ResourceStorageModeShared);
   this->result = (MTL::Buffer ***)malloc(sizeof(MTL::Buffer **) * 2);
   this->result[0] = (MTL::Buffer **)malloc(sizeof(MTL::Buffer *) * nbLayer);
   this->result[1] = (MTL::Buffer **)malloc(sizeof(MTL::Buffer *) * nbLayer);
@@ -155,6 +166,11 @@ void NetworksManager::initBuffer() {
         sizeof(float) * nbNeuronPerLayer[nbLayer - 1] * nbGame * 2,
         MTL::ResourceStorageModeShared);
   }
+
+  int *dataInputCont = (int *)this->inputData->contents();
+  dataInputCont[0] = INPUT_NORM_DATA_LENGTH;
+  dataInputCont[1] = INPUT_TRIG_DATA_LENGTH;
+  dataInputCont[2] = INPUT_LENGTH;
 }
 
 /// Init device, metals functions, ...
@@ -166,6 +182,10 @@ void NetworksManager::initSystem() {
   // Finding metal functions in the lib
   auto strWeightFunction =
       NS::String::string("networksComputeWeight", NS::ASCIIStringEncoding);
+  auto strDataTrigFunction =
+      NS::String::string("networksComputeDataTrig", NS::ASCIIStringEncoding);
+  auto strDataNormFunction =
+      NS::String::string("networksComputeDataNorm", NS::ASCIIStringEncoding);
 
   NS::String *path =
       NS::String::string("shaders.metallib", NS::UTF8StringEncoding);
@@ -173,20 +193,34 @@ void NetworksManager::initSystem() {
 
   MTL::Function *weightFunction =
       defaultLibrary->newFunction(strWeightFunction);
+  MTL::Function *dataTrigFunction =
+      defaultLibrary->newFunction(strDataTrigFunction);
+  MTL::Function *dataNormFunction =
+      defaultLibrary->newFunction(strDataNormFunction);
   defaultLibrary->release();
 
   if (weightFunction == nullptr)
     throw std::invalid_argument("Failed to find the networksComputeWeight");
+  if (dataTrigFunction == nullptr)
+    throw std::invalid_argument("Failed to find the networksComputeDataTrig");
+  if (dataNormFunction == nullptr)
+    throw std::invalid_argument("Failed to find the networksComputeDataNorm");
 
   // Create a compute pipeline state object.
   weightFunctionPSO = device->newComputePipelineState(weightFunction, &error);
+  dataTrigFunctionPSO =
+      device->newComputePipelineState(dataTrigFunction, &error);
+  dataNormFunctionPSO =
+      device->newComputePipelineState(dataNormFunction, &error);
   weightFunction->release();
+  dataNormFunction->release();
+  dataTrigFunction->release();
 
-  if (weightFunctionPSO == nullptr) {
+  if (weightFunctionPSO == nullptr || dataNormFunctionPSO == nullptr ||
+      dataTrigFunctionPSO == nullptr) {
     std::cout << error << std::endl;
-    throw std::invalid_argument(
-        "Failed to created pipeline (weightFunctionPSO) state object, see "
-        "error above.");
+    throw std::invalid_argument("Failed to created pipeline state object, see "
+                                "error above.");
   }
 
   // Create command queue
@@ -271,20 +305,16 @@ void NetworksManager::initGeneration() {
 }
 
 void NetworksManager::setInputs(int tickId, std::vector<std::thread> *threads) {
-  float *inputsCont = (float *)result[tickId % 2][0]->contents();
+  float *dataTrigInput = (float *)inputDataTrig->contents();
+  float *dataNormInput = (float *)inputDataNorm->contents();
 
   // Set inputs
   for (int i = 0; i < NB_THREAD; i++) {
-    threads->emplace_back([i, inputsCont, this]() {
+    threads->emplace_back([i, dataNormInput, dataTrigInput, this]() {
       int start = i * nbGame / NB_THREAD;
       int end = (i == NB_THREAD - 1) ? nbGame : (i + 1) * nbGame / NB_THREAD;
       for (int j = start; j < end; j++) {
-
-        float startIndex[2];
-        startIndex[0] = (j * 2 + 0) * INPUT_LENGTH;
-        startIndex[1] = (j * 2 + 1) * INPUT_LENGTH;
-
-        games[j]->setInputs(inputsCont, startIndex);
+        games[j]->setInputs(dataTrigInput, dataNormInput, j);
       }
     });
   }
@@ -325,7 +355,6 @@ void NetworksManager::performGeneration(int **groups) {
   for (std::thread &t : threadsInputs) {
     t.join();
   }
-
   // Var for display stats
   int sizeBar = 50;
   int printRate = GAME_LENGTH * TICKS_SECOND / sizeBar;
@@ -471,9 +500,9 @@ void NetworksManager::saveGame(int player1, int player2, fs::path path) {
 
   // Performing the game
   for (int iTick = 0; iTick < GAME_LENGTH * TICKS_SECOND; iTick++) {
-    game.setInputs(inputsCont, startIndex);
-    computeNetworks(1, 0);
-
-    game.tick(resCont);
+    // game.setInputs(inputsCont, startIndex);
+    // computeNetworks(1, 0);
+    //
+    // game.tick(resCont);
   }
 }

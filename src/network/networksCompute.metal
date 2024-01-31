@@ -31,3 +31,49 @@ kernel void networksComputeWeight(device float *inputs,
   // Pass activation function
   result[index] = 1 / ( 1 + exp(-result[index]));
 }
+
+float normalize(float val, float min, float max) {
+  return ((val - min) / (max - min)) * 2 - 1;
+}
+
+
+kernel void networksComputeDataNorm(device float *inputs,
+                                    device float *result, 
+                                    device int *data,
+                                    uint index [[thread_position_in_grid]]) {
+
+  int INPUT_NORM_DATA_LENGTH = data[0];
+  // int INPUT_TRIG_DATA_LENGTH = data[1];
+  int INPUT_LENGTH = data[2];
+
+  int i = index / INPUT_NORM_DATA_LENGTH;
+  i = i * INPUT_LENGTH;
+  i = i + index % INPUT_NORM_DATA_LENGTH;
+
+  float val = inputs[index * 3 + 0];
+  float min = inputs[index * 3 + 1];
+  float max = inputs[index * 3 + 2];
+
+  result[i] = ((val - min) / (max - min)) * 2 - 1;
+}
+
+kernel void networksComputeDataTrig(device float *inputs,
+                                    device float *result,
+                                    device int *data,
+                                    uint index [[thread_position_in_grid]]) {
+
+
+  int INPUT_NORM_DATA_LENGTH = data[0];
+  int INPUT_TRIG_DATA_LENGTH = data[1];
+  int INPUT_LENGTH = data[2];
+
+  int i = index / (INPUT_TRIG_DATA_LENGTH / 2);
+  i = i * INPUT_LENGTH + INPUT_NORM_DATA_LENGTH;
+  i = i + index % (INPUT_TRIG_DATA_LENGTH / 2);
+
+  float _cos;
+  float _sin = sincos(inputs[index] , _cos);
+
+  result[i + 0] = _cos;
+  result[i + 1] = _sin;
+}

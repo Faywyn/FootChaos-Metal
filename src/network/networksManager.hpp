@@ -47,13 +47,23 @@ public:
 
   MTL::CommandQueue *commandQueue;
   MTL::ComputePipelineState *weightFunctionPSO;
+  MTL::ComputePipelineState *dataTrigFunctionPSO;
+  MTL::ComputePipelineState *dataNormFunctionPSO;
+
   // Weights[i] is a list of all weights from layer i
   // in every network
   MTL::Buffer **weights;
   // Data needed for neurone calcul
   MTL::Buffer **data;
+  MTL::Buffer *inputData;
   // Result of each layer
   MTL::Buffer ***result;
+  // Game info in order de compute all sin, cos ... and normalise
+  // inputDataNorm[i + 0]: input
+  // inputDataNorm[i + 1]: maxVal
+  // inputDataNorm[i + 2]: minVal
+  MTL::Buffer *inputDataNorm; // For normalise
+  MTL::Buffer *inputDataTrig; // For trigo functions
   // List of network in each game
   MTL::Buffer *network1;
   MTL::Buffer *network2;

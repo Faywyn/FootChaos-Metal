@@ -67,9 +67,9 @@ kernel void networksComputeDataTrig(device float *inputs,
   int INPUT_TRIG_DATA_LENGTH = data[1];
   int INPUT_LENGTH = data[2];
 
-  int i = index / (INPUT_TRIG_DATA_LENGTH / 2);
+  int i = index / INPUT_TRIG_DATA_LENGTH;
   i = i * INPUT_LENGTH + INPUT_NORM_DATA_LENGTH;
-  i = i + index % (INPUT_TRIG_DATA_LENGTH / 2);
+  i = i + (index % INPUT_TRIG_DATA_LENGTH) * 2;
 
   float _cos;
   float _sin = sincos(inputs[index] , _cos);

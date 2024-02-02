@@ -241,8 +241,8 @@ void FootChaos::setInputs(float *inputsDataTrig, float *inputsDataNorm,
   float aAdv1 = angle(pos1, pos2, ortho1);
   float aAdv2 = angle(pos2, pos1, ortho2);
 
-  int index1N = (startIndex * 2) * INPUT_NORM_DATA_LENGTH * 3;
-  int index1T = (startIndex * 2) * INPUT_TRIG_DATA_LENGTH;
+  int index1N = (startIndex * 2 + 0) * INPUT_NORM_DATA_LENGTH * 3;
+  int index1T = (startIndex * 2 + 0) * INPUT_TRIG_DATA_LENGTH;
   inputsDataNorm[index1N + 0] = dCenter1;
   inputsDataNorm[index1N + 1] = 0;
   inputsDataNorm[index1N + 2] = dMaxCenter;
@@ -306,10 +306,10 @@ void FootChaos::setInputs(float *inputsDataTrig, float *inputsDataNorm,
   inputsDataNorm[index2N + 19] = -MAX_SPEED;
   inputsDataNorm[index2N + 20] = MAX_SPEED;
 
-  inputsDataTrig[index1T + 0] = aCenter2;
-  inputsDataTrig[index1T + 1] = aBall2;
-  inputsDataTrig[index1T + 2] = aGoalA2;
-  inputsDataTrig[index1T + 3] = aAdv2;
+  inputsDataTrig[index2T + 0] = aCenter2;
+  inputsDataTrig[index2T + 1] = aBall2;
+  inputsDataTrig[index2T + 2] = aGoalA2;
+  inputsDataTrig[index2T + 3] = aAdv2;
 }
 
 /// Add data (save)

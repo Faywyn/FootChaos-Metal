@@ -7,6 +7,7 @@
 
 float randomFloat();
 int randomInt(int min, int max);
+float randomGaussian(float center, float radius);
 float round(float x, int n);
 
 uint64_t time();

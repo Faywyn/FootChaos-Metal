@@ -146,6 +146,9 @@ FootChaos::~FootChaos() {
 /// Parameters:
 ///  - *inputs (inputs of the cars)
 void FootChaos::tick(float *inputs) {
+  if (idle)
+    return;
+  checkIdle();
 
   // Tick every car
   int indexStart = 2 * OUTPUT_LENGTH * id;
@@ -177,7 +180,7 @@ void FootChaos::tick(float *inputs) {
   // Perform global world tick
   int32 velocityIterations = 6;
   int32 positionIterations = 2;
-  float timeTick = 1.0f / TICKS_SECOND;
+  float timeTick = 5.0f / TICKS_SECOND;
   world->Step(timeTick, velocityIterations, positionIterations);
 
   if (save)
@@ -188,25 +191,37 @@ void FootChaos::tick(float *inputs) {
 
 /// Reset position
 void FootChaos::resetPosition() {
-  ball->setPosition(0, 0, 0);
+  ball->setPosition(randomFloat(), randomFloat(), randomFloat());
   if (random == false) {
     team1->setPosition(-FIELD_LENGHT / 2, 0, -M_PI / 2);
     team2->setPosition(+FIELD_LENGHT / 2, 0, +M_PI / 2);
     return;
   }
-  float r1 = abs(randomFloat()) * 0.7;
-  float r2 = randomFloat() * 0.9;
-  float r3 = randomFloat();
+  float r1 = 1.0f / 2; // abs(randomFloat()) * 0.7f;
+  float r2 = randomFloat() * 0.9f;
+  float r3 = -1.0f / 2;
 
   team1->setPosition(-r1 * FIELD_LENGHT, +r2 * FIELD_WIDTH, r3 * M_PI);
   team2->setPosition(+r1 * FIELD_LENGHT, -r2 * FIELD_WIDTH, r3 * M_PI - M_PI);
+}
+
+void FootChaos::resetGame() {
+  resetPosition();
+  scoreTeam1 = 0;
+  scoreTeam2 = 0;
+  scoreTeam1Pos = 0;
+  scoreTeam2Pos = 0;
+  idle = false;
+  tickId = 0;
+  idleTick = 0;
+  farTick = 0;
 }
 
 /// Set the inputs for the networks
 /// Parameters:
 ///  - *inputs (tab to edit)
 ///  - *startIndex (where to edit inputs)
-void FootChaos::setInputs(float *inputsDataTrig, float *inputsDataNorm,
+void FootChaos::setInputs(float *inputsDataNorm, float *inputsDataTrig,
                           int startIndex) {
   // Get ball data
   b2Vec2 ballPos = ball->getPosition();
@@ -343,4 +358,33 @@ void FootChaos::addData(float stearing1, float stearing2) {
   data[tickId][1 + 4 + DATA_PER_PLAYER] = v2Pos.y;
   data[tickId][2 + 4 + DATA_PER_PLAYER] = v2Angle;
   data[tickId][3 + 4 + DATA_PER_PLAYER] = stearing2;
+}
+
+void FootChaos::checkIdle() {
+  // If already idle, don't change
+  if (idle)
+    return;
+
+  // Idle game
+  bool team1Idle = team1->getOrthogonalSpeed().Normalize() < 1;
+  bool team2Idle = team2->getOrthogonalSpeed().Normalize() < 1;
+  bool ballIdle = ball->getOrthogonalSpeed().Normalize() < 1;
+  bool isIdle = team1Idle && team2Idle && ballIdle;
+
+  if (tickId - idleTick > TICKS_SECOND && isIdle)
+    idle = true;
+  if (isIdle == false)
+    idleTick = tickId;
+
+  // Player far from the ball
+  bool team1Far =
+      (team1->getPosition() - ball->getPosition()).Normalize() > 200;
+  bool team2Far =
+      (team2->getPosition() - ball->getPosition()).Normalize() > 200;
+  bool isFar = team1Far && team2Far;
+
+  if (tickId - farTick > 10 * TICKS_SECOND && isFar)
+    idle = true;
+  if (isFar == false)
+    farTick = tickId;
 }

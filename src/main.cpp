@@ -2,6 +2,8 @@
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
+#include <csignal>
+#include <cstdlib>
 #include <iostream>
 
 #include "config.hpp"
@@ -22,16 +24,21 @@ int main(int argc, const char *argv[]) {
   int id = std::stoi(argv[1]);
   bool create = std::stoi(argv[2]) == 1;
 
+  // Create training if needed
   if (create) {
     int nbNetwork = std::stoi(argv[3]);
     int groupSize = std::stoi(argv[4]);
 
     Training training = Training(nbNetwork, groupSize, NB_LAYER,
                                  (int *)NB_NEURON_PER_LAYER, id);
+
     training.save();
+    exit(0);
+    return 1;
   }
 
   Training *training = new Training(id);
   training->startTraining(10, -1);
-  return 1;
+  training->save();
+  exit(0);
 }

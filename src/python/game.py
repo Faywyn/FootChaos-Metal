@@ -7,6 +7,8 @@ import os
 
 path = (os.getcwd() + "/trainings/")
 
+print(path)
+
 trainingId = int(sys.argv[1])
 matchNb = int(sys.argv[2] or -1)
 maxNb = int(sys.argv[3] or -1)
@@ -69,8 +71,8 @@ def printCar(x, y, angle, steering, color):
     r4 = [ x2 * 0.15 + x4 * 0.85, y2 * 0.15 + y4 * 0.85 ]
 
 
-    drawWheel(r1[0], r1[1], angle + steering * 0.5)
-    drawWheel(r2[0], r2[1], angle + steering * 0.5)
+    drawWheel(r1[0], r1[1], angle + steering)
+    drawWheel(r2[0], r2[1], angle + steering)
     drawWheel(r3[0], r3[1], angle)
     drawWheel(r4[0], r4[1], angle)
 

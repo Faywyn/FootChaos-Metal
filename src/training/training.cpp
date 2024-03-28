@@ -213,9 +213,18 @@ void Training::getScoreData(float **score, float *avrg, float *best,
 /// Parameters:
 ///  **score
 void Training::mutate(float **score) {
+  double nbMatchPerNetwork = (networksManager->groupSize - 1);
+  double best = score[0][1] / nbMatchPerNetwork;
+  int nbNetwork = networksManager->nbNetwork;
 
   // Creating new Networks (weakest remove)
   int nbNetworkNew = networksManager->nbNetwork * NEW_BLOOD_COEF;
+  if (best < 0.5) {
+    nbNetworkNew *= 0.5 / best;
+    if (nbNetworkNew > nbNetwork / 4) {
+      nbNetworkNew = nbNetwork / 4;
+    }
+  }
   for (int i = 0; i < nbNetworkNew; i++) {
     float r = abs(randomFloat());
     float k = (float)i / (float)nbNetworkNew;
@@ -251,6 +260,7 @@ void Training::mutate(float **score) {
       int end = (i == NB_THREAD - 1) ? n : (i + 1) * n / NB_THREAD;
       for (int i = start; i < end; i++) {
         float p = (float)(i + 1) / (float)(networksManager->nbNetwork);
+        p = p * p;
         // "NB_WEIGHT_CHANGE" weights change per network on average (depending
         // on i)
         p /= (float)networksManager->nbWeightPerNetwork / NB_WEIGHT_CHANGE;
@@ -287,7 +297,9 @@ void Training::saveMetrics(float best, float avrg, float time) {
   fs::path p = path / ("metrics.csv");
 
   std::ofstream csv(p, std::ios::app);
+  float nbMatchSec = 1000 * networksManager->nbGame / time;
   csv << networksManager->nbGeneration << ";" << best << ";" << avrg << ";"
-      << time << "\n";
+      << time << ";" << networksManager->nbNetwork << ";"
+      << networksManager->groupSize << ";" << nbMatchSec << "\n";
   csv.close();
 }

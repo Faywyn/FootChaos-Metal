@@ -4,6 +4,7 @@
 #include <box2d/box2d.h>
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
 
 /// Car class
 /// Parameters:

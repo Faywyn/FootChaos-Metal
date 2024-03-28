@@ -2,15 +2,13 @@
 #include "config.hpp"
 
 #include <iostream>
-#include <thread>
-#include <vector>
+
+std::random_device rand_dev;
+std::mt19937 generator(rand_dev());
+std::uniform_int_distribution<int> distr(0, 10e8);
 
 /// Random float between -1 and 1
 float randomFloat() {
-  std::random_device rand_dev;
-  std::mt19937 generator(rand_dev());
-  std::uniform_int_distribution<int> distr(0, 10e8);
-
   float r = ((float)(distr(generator) * 2) / 10e8f) - 1;
   return r;
 }
@@ -20,11 +18,20 @@ float randomFloat() {
 ///  - min
 ///  - max
 int randomInt(int min, int max) {
-  std::random_device rand_dev;
-  std::mt19937 generator(rand_dev());
   std::uniform_int_distribution<int> distr(min, max);
 
   int r = distr(generator);
+  return r;
+}
+
+/// Gaussiant generated number
+/// Parameters:
+///  - center
+///  - radius
+float randomGaussian(float center, float radius) {
+  std::normal_distribution<float> distr(center, radius);
+
+  float r = distr(generator);
   return r;
 }
 
@@ -51,15 +58,20 @@ float round(float x, int n) { return (float)(int)(x * n) / (float)n; }
 void printStat(int line, float p, int sizeBar, uint64_t start,
                uint64_t current) {
 
+  float duration = round((float)(time() - start) / 1000, 10);
+  float end = round((float)((time() - start) * (1 - p)) / (1000 * p), 10);
+
   std::cout << "\033[" << line << ";0H" << RESET << "  "
             << "[" << CYAN << std::string(floor(p * sizeBar), '=') << RESET
             << std::string(sizeBar - floor(p * sizeBar), '-') << "] "
             << (int)(p * 100) << "% "
-            << "Duration: " << round((float)(time() - start) / 1000, 10) << "s "
-            << "End: "
-            << round((float)(time() - start) * (1 - p) / (1000 * p), 10) << "s "
-            << std::string(20, ' ') << "\033[" << STAT_TAB_START + NB_STATS + 7
-            << ";0H" << std::endl;
+            << "\033[" << line << ";" << sizeBar + 6
+            << "H Duration: " << duration << "s "
+            << "\033[" << line << ";" << sizeBar + 23 << "H End: " << end
+            << "s "
+            << "\033[" << line << ";" << sizeBar + 35
+            << "H Total: " << duration + end << "s " << std::string(20, ' ')
+            << "\033[" << STAT_TAB_START + NB_STATS + 7 << ";0H" << std::endl;
 }
 
 /// Print old stat

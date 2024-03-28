@@ -18,9 +18,8 @@
 #define MAX_STEERING_SPEED 0.1f
 #define TORQUE_FORCE (CAR_LENGHT * CAR_WIDTH * 1e2)
 
-#define TICK_DURATION_COEF 2
 #define TICKS_SECOND 60
-#define GAME_LENGTH 30 // s
+#define GAME_LENGTH 60 // s
 
 #define DATA_PER_PLAYER 4
 // ----- GAME CONFIG -----
@@ -30,18 +29,20 @@
 #define OUTPUT_LENGTH 2
 #define INPUT_NORM_DATA_LENGTH 7
 #define INPUT_TRIG_DATA_LENGTH 4
+#define DEFAULT_WEIGHT_VALUE 0
+#define WEIGHT_RADIUS 2 // Gaussian generation
 
-#define NB_LAYER 8
-const int NB_NEURON_PER_LAYER[NB_LAYER] = {INPUT_LENGTH, 20, 20, 20,
-                                           16,           10, 6,  OUTPUT_LENGTH};
+#define NB_LAYER 13
+const int NB_NEURON_PER_LAYER[NB_LAYER] = {
+    INPUT_LENGTH, 15, 15, 15, 15, 15, 14, 12, 10, 8, 6, 4, OUTPUT_LENGTH};
 // ----- NETWORKS CONFIG -----
 
 // ----- TRAINING CONFIG -----
 #define TRAININGS_PATH (fs::current_path() / "trainings")
 
-#define NEW_BLOOD_COEF 0.08f
-#define COPY_COEF 0.04f
-#define NB_WEIGHT_CHANGE 50
+#define NEW_BLOOD_COEF 0.05f
+#define COPY_COEF 0.01f
+#define NB_WEIGHT_CHANGE 25
 // ----- TRAINING CONFIG -----
 
 // ----- COLORS -----
@@ -56,7 +57,7 @@ const int NB_NEURON_PER_LAYER[NB_LAYER] = {INPUT_LENGTH, 20, 20, 20,
 // ----- COLORS -----
 
 // ----- OTHER -----
-#define NB_THREAD 8
+#define NB_THREAD 32
 #define STAT_TAB_START 4
-#define NB_STATS 20
+#define NB_STATS 10
 // ----- OTHER -----

@@ -19,6 +19,7 @@ Ball::Ball(b2World *world) {
   fixtureBallDef.shape = &ballShape;
   fixtureBallDef.density = 0.1f;
   fixtureBallDef.friction = 0.1f;
+  fixtureBallDef.restitution = 0.1f;
 
   // Init
   b2BodyDef ballDef;
@@ -74,6 +75,7 @@ void Ball::tick() {
   b2Vec2 force = b2Vec2(0, 0);
   b2Vec2 pos = body->GetPosition();
 
+  return;
   // Apply force close to the wall
   // Right and left wall
   if (abs(pos.y) > GOAL_WIDTH && abs(pos.x) > FIELD_LENGHT * 0.9) {

@@ -63,6 +63,9 @@ class FootChaos {
 private:
   int id;
   int tickId = 0;
+  bool idle = false;
+  int idleTick = 0;
+  int farTick = 0;
   b2World *world;
 
   float **data;
@@ -87,7 +90,10 @@ public:
 
   void tick(float *inputs);
   void resetPosition();
+  void resetGame();
 
-  void setInputs(float *inputsDataTrig, float *inputsDataNorm, int startIndex);
+  void setInputs(float *inputsDataNorm, float *inputsDataTrig, int startIndex);
   void addData(float stearing1, float stearing2);
+
+  void checkIdle();
 };

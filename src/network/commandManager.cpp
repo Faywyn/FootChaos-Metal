@@ -6,8 +6,8 @@ CommandManager::CommandManager(int _nbGame, int tickId,
                                NetworksManager *manager) {
   MTL::CommandQueue *commandQueue = manager->commandQueue;
   MTL::ComputePipelineState *weightFunctionPSO = manager->weightFunctionPSO;
-  MTL::ComputePipelineState *trigoFunctionPSO = manager->dataTrigFunctionPSO;
   MTL::ComputePipelineState *normFunctionPSO = manager->dataNormFunctionPSO;
+  MTL::ComputePipelineState *trigoFunctionPSO = manager->dataTrigFunctionPSO;
   MTL::Buffer **weights = manager->weights;
   MTL::Buffer **data = manager->data;
   MTL::Buffer *dataInput = manager->inputData;

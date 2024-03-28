@@ -29,13 +29,9 @@ kernel void networksComputeWeight(device float *inputs,
   }
 
   // Pass activation function
-  result[index] = 1 / ( 1 + exp(-result[index]));
+  //result[index] = 1 / ( 1 + exp(-result[index])); // Sigmoide
+  result[index] = max(0., result[index]); // ReLu 
 }
-
-float normalize(float val, float min, float max) {
-  return ((val - min) / (max - min)) * 2 - 1;
-}
-
 
 kernel void networksComputeDataNorm(device float *inputs,
                                     device float *result, 
@@ -54,7 +50,7 @@ kernel void networksComputeDataNorm(device float *inputs,
   float min = inputs[index * 3 + 1];
   float max = inputs[index * 3 + 2];
 
-  result[i] = ((val - min) / (max - min)) * 2 - 1;
+  result[i] = ((val - min) / (max - min));
 }
 
 kernel void networksComputeDataTrig(device float *inputs,
@@ -74,6 +70,6 @@ kernel void networksComputeDataTrig(device float *inputs,
   float _cos;
   float _sin = sincos(inputs[index] , _cos);
 
-  result[i + 0] = _cos;
-  result[i + 1] = _sin;
+  result[i + 0] = (_cos + 1) / 2; // Betwee 0 and 1
+  result[i + 1] = (_sin + 1) / 2;
 }

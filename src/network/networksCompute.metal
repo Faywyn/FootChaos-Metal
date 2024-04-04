@@ -29,8 +29,11 @@ kernel void networksComputeWeight(device float *inputs,
   }
 
   // Pass activation function
-  //result[index] = 1 / ( 1 + exp(-result[index])); // Sigmoide
-  result[index] = max(0., result[index]); // ReLu 
+
+  result[index] = 1 / ( 1 + exp(-result[index])); // Sigmoide
+  // result[index] = max(0., result[index]); // ReLu 
+  // result[index] = result[index] > 0 ? 1 : 0; //Heaviside
+  // result[index] = exp(- result[index] * result[index]); // Gauss
 }
 
 kernel void networksComputeDataNorm(device float *inputs,

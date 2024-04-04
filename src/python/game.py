@@ -96,8 +96,11 @@ def printCar(x, y, angle, steering, color):
     xf4 = xfB - RATIO * CAR_WIDTH * 2/5 * sin(angle)
     yf4 = yfB + RATIO * CAR_WIDTH * 2/5 * cos(angle)
 
+    # Couleur de la fenêtre (color mais en plus clair)
+    color_bright = tuple([min(c + 50, 255) for c in color])
+
     # Afficher les fenêtres
-    pygame.draw.polygon(screen, "white", [(xf1, yf1), (xf2, yf2), (xf4, yf4), (xf3, yf3)])
+    pygame.draw.polygon(screen, color_bright, [(xf1, yf1), (xf2, yf2), (xf4, yf4), (xf3, yf3)])
 
 class Coord():
     x: float    # Coordonnées réelles

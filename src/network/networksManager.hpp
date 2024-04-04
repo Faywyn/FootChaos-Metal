@@ -80,7 +80,8 @@ public:
   void randomizeNetwork(int networkId);
   void copyNetwork(int from, int to);
   void mutateNetwork(int id, float p);
+  void crossover(int id1, int id2, float p)
 
-  void saveGame(int player1, int player2, fs::path path);
+      void saveGame(int player1, int player2, fs::path path);
   void saveNextGames(bool status, fs::path path);
 };

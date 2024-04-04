@@ -461,8 +461,33 @@ void NetworksManager::mutateNetwork(int id, float p) {
       if (r > p)
         continue;
 
-      float rG = randomGaussian(cont[i], 0.5);
+      float rG = randomGaussian(cont[i], 2);
       cont[i] = rG;
+    }
+  }
+}
+
+/// Crossover from 1 and 2, erase 2
+/// Parameters:
+///  - id1: Network 1
+///  - id2: Network 2
+///  - p: proba to take weight from 1
+void NetworksManager::crossover(int id1, int id2, float p) {
+  for (int iLayer = 1; iLayer < nbLayer; iLayer++) {
+    int nbWeigth = nbNeuronPerLayer[iLayer] * nbNeuronPerLayer[iLayer - 1];
+
+    int start1 = id1 * nbWeigth;
+    int end1 = (id1 + 1) * nbWeigth;
+    int start2 = id2 * nbWeigth;
+
+    int diff = start2 - start1;
+
+    float *cont = (float *)weights[iLayer]->contents();
+    for (int i = start1; i < end1; i++) {
+      float r = abs(randomFloat());
+
+      float w = r > p ? cont[i] : cont[i + diff];
+      cont[i + diff] = w;
     }
   }
 }
